@@ -18,10 +18,12 @@ pip3 install --upgrade pip setuptools wheel
 
 # pip3 packages 
 install_pip_packages pygame matplotlib pyopengl Pillow pybind11 
-install_pip_package numpy==1.18.3
-install_pip_package scipy==1.4.1
-install_pip_package scikit-image==0.16.2
+install_pip_package numpy #==1.18.3
+install_pip_package scipy #==1.4.1
+install_pip_package scikit-image #==0.16.2
+install_pip_package seaborn
 install_pip_packages pyyaml termcolor tqdm yacs
+install_pip_packages gdown  # to download from google drive
 
 # install_pip_package opencv-python  
 # #pip3 uninstall opencv-contrib-python  # better to clean it before installing the right version 
@@ -35,16 +37,24 @@ CMAKE_ARGS_OPTION="-DOPENCV_ENABLE_NONFREE=ON" # install nonfree modules
 MAKEFLAGS="$MAKEFLAGS_OPTION" CMAKE_ARGS="$CMAKE_ARGS_OPTION" pip3 install opencv-python -vvv $PRE_OPTION
 MAKEFLAGS="$MAKEFLAGS_OPTION" CMAKE_ARGS="$CMAKE_ARGS_OPTION" pip3 install opencv-contrib-python -vvv $PRE_OPTION
 
-install_pip_package torch==1.4.0 
-install_pip_package torchvision==0.5.0
+#install_pip_package torch==1.4.0 
+#install_pip_package torchvision==0.5.0
+install_pip_package torch #==1.10.1
+install_pip_package torchvision #==0.11.2 
 install_pip_package ordered-set # from https://pypi.org/project/ordered-set/
+install_pip_package kornia #==0.6.8
+install_pip_package kornia_moons
+install_pip_package importlib_metadata #==4.8.3
 
 # The following line might not work
-#install_pip_package tensorflow-gpu==1.14.0  # 1.14.0 works with all the modules contained in pyslam2
+install_pip_package tensorflow-gpu==1.14.0  # 1.14.0 works with all the modules contained in pyslam2
 # Thanks Utkarsh for the fix https://github.com/luigifreda/pyslam/issues/92 
-export TF_BINARY_URL=https://storage.googleapis.com/tensorflow/mac/cpu/tensorflow-1.14.0-py3-none-any.whl
+#export TF_BINARY_URL=https://storage.googleapis.com/tensorflow/mac/cpu/tensorflow-1.14.0-py3-none-any.whl
 pip3 install --upgrade $TF_BINARY_URL
+install_pip_package tf_slim
 
+
+pip install protobuf==3.20.*    # for delf NN
 
 # it may be required if you have errors with pillow
 #pip3 uninstall pillow 

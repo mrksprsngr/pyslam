@@ -19,26 +19,30 @@
 import numpy as np 
 import cv2
 import torch
+from utils_sys import Printer, import_from
 from parameters import Parameters  
 from enum import Enum
 from collections import defaultdict
+
+from frame import Frame
 import config
 config.cfg.set_lib('xfeat') 
-
-from modules.xfeat import XFeat
-
 config.cfg.set_lib('lightglue')
-from lightglue import LightGlue
+
+XFeat = import_from('modules.xfeat', 'XFeat')
+LightGlue = import_from('lightglue', 'LightGlue')
+
+
 LightGlue.pruning_keypoint_thresholds['cuda']
 kRatioTest = Parameters.kFeatureMatchRatioTest
-kVerbose = True
+kVerbose = False
 
 class FeatureMatcherTypes(Enum):
-    NONE = 0
-    BF = 1     
-    FLANN = 2
-    XFEAT = 3
-    LG = 4
+    NONE      = 0
+    BF        = 1      # Brute force
+    FLANN     = 2      # FLANN-based 
+    XFEAT     = 3      # "XFeat: Accelerated Features for Lightweight Image Matching"
+    LIGHTGLUE = 4      # "LightGlue: Local Feature Matching at Light Speed"
 
 
 def feature_matcher_factory(norm_type=cv2.NORM_HAMMING, cross_check=False, ratio_test=kRatioTest, type=FeatureMatcherTypes.FLANN):
@@ -48,7 +52,7 @@ def feature_matcher_factory(norm_type=cv2.NORM_HAMMING, cross_check=False, ratio
         return FlannFeatureMatcher(norm_type=norm_type, cross_check=cross_check, ratio_test=ratio_test, type=type)
     if type ==FeatureMatcherTypes.XFEAT:
         return  XFeatMatcher(norm_type=norm_type, cross_check=cross_check, ratio_test=ratio_test, type=type)
-    if type == FeatureMatcherTypes.LG:
+    if type == FeatureMatcherTypes.LIGHTGLUE:
         return LightGlueMatcher(norm_type=norm_type, cross_check=cross_check, ratio_test=ratio_test, type=type)
     return None 
 
@@ -76,7 +80,7 @@ class FeatureMatcher(object):
         self.matcher_name = ''
         self.matcherLG = None
         self.deviceLG = None
-        if self.type == FeatureMatcherTypes.LG:
+        if self.type == FeatureMatcherTypes.LIGHTGLUE:
             if self.matcherLG is None:
                 self.matcherLG = LightGlue(features="superpoint",n_layers=2).eval().to('cuda')
             if self.deviceLG is None: 
@@ -85,13 +89,13 @@ class FeatureMatcher(object):
         
     # input: des1 = queryDescriptors, des2= trainDescriptors
     # output: idx1, idx2  (vectors of corresponding indexes in des1 and des2, respectively)
-    def match(self, frame, des1, des2, kps1 = None,kps2 = None, ratio_test=None):
+    def match(self, frame : Frame, des1, des2, kps1 = None, kps2 = None, ratio_test=None):
         if kVerbose:
             print(self.matcher_name,', norm ', self.norm_type) 
         #print('des1.shape:',des1.shape,' des2.shape:',des2.shape)    
         #print('des1.dtype:',des1.dtype,' des2.dtype:',des2.dtype)
         #print(self.type)
-        if self.type == FeatureMatcherTypes.LG:
+        if self.type == FeatureMatcherTypes.LIGHTGLUE:
             d1={
             'keypoints': torch.tensor(kps1,device='cuda').unsqueeze(0),
             'descriptors': torch.tensor(des2,device='cuda').unsqueeze(0),

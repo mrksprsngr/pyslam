@@ -33,14 +33,13 @@ from parameters import Parameters
 kMinNumFeatureDefault = 2000
 kLkPyrOpticFlowNumLevelsMin = 3   # maximal pyramid level number for LK optic flow 
 kRatioTest = Parameters.kFeatureMatchRatioTest
-lightglue = False
 
 class FeatureTrackerTypes(Enum):
     LK        = 0   # Lucas Kanade pyramid optic flow (use pixel patch as "descriptor" and matching by optimization)
     DES_BF    = 1   # descriptor-based, brute force matching with knn 
     DES_FLANN = 2   # descriptor-based, FLANN-based matching
-    XFEAT     = 3 
-    LG        = 4
+    XFEAT     = 3   # based on XFEAT, "XFeat: Accelerated Features for Lightweight Image Matching"
+    LIGHTGLUE = 4   # LightGlue, "LightGlue: Local Feature Matching at Light Speed"
 
 
 def feature_tracker_factory(num_features=kMinNumFeatureDefault, 
@@ -153,11 +152,9 @@ class DescriptorFeatureTracker(FeatureTracker):
 
         if tracker_type == FeatureTrackerTypes.XFEAT:
             self.matching_algo = FeatureMatcherTypes.XFEAT 
-            Printer.blue("XXXXXXXXXXXXXXXXXXXXxx") 
 
-        elif tracker_type == FeatureTrackerTypes.LG:
-            self.matching_algo = FeatureMatcherTypes.LG
-            Printer.blue("XXXXXXXXXXXXXXXXXXXXxx")             
+        elif tracker_type == FeatureTrackerTypes.LIGHTGLUE:
+            self.matching_algo = FeatureMatcherTypes.LIGHTGLUE         
 
         elif tracker_type == FeatureTrackerTypes.DES_FLANN:
             self.matching_algo = FeatureMatcherTypes.FLANN
@@ -181,7 +178,7 @@ class DescriptorFeatureTracker(FeatureTracker):
         # convert from list of keypoints to an array of points 
         kps_cur = np.array([x.pt for x in kps_cur], dtype=np.float32) 
         # Printer.orange(des_ref.shape)
-        idxs_ref, idxs_cur = self.matcher.match(image_cur,des_ref, des_cur,  kps2=kps_ref, kps1=kps_cur)  #knnMatch(queryDescriptors,trainDescriptors)
+        idxs_ref, idxs_cur = self.matcher.match(image_cur, des_ref, des_cur,  kps2=kps_ref, kps1=kps_cur)  #knnMatch(queryDescriptors,trainDescriptors)
         #print('num matches: ', len(matches))
         
         res = FeatureTrackingResult()

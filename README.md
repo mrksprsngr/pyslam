@@ -3,24 +3,25 @@
 <!-- TOC -->
 
 - [pySLAM v2](#pyslam-v2)
-  - [Install](#install)
-    - [Requirements](#requirements)
-    - [Ubuntu 18.04](#ubuntu-1804)
-    - [Ubuntu 20.04 and Ubuntu 22.04](#ubuntu-2004-and-ubuntu-2204)
-    - [MacOS](#macos)
-    - [Docker](#docker)
-    - [How to install non-free OpenCV modules](#how-to-install-non-free-opencv-modules)
-    - [Troubleshooting](#troubleshooting)
-  - [Usage](#usage)
-  - [Supported Local Features](#supported-local-features)
-  - [Datasets](#datasets)
-    - [KITTI Datasets](#kitti-datasets)
-    - [TUM Datasets](#tum-datasets)
-  - [Camera Settings](#camera-settings)
-  - [Contributing to pySLAM](#contributing-to-pyslam)
-  - [References](#references)
-  - [Credits](#credits)
-  - [TODOs](#todos)
+    - [1. Install](#1-install)
+        - [1.1. Requirements](#11-requirements)
+        - [1.2. Ubuntu 18.04](#12-ubuntu-1804)
+        - [1.3. Ubuntu 20.04 and Ubuntu 22.04](#13-ubuntu-2004-and-ubuntu-2204)
+        - [1.4. MacOS](#14-macos)
+        - [1.5. Docker](#15-docker)
+        - [1.6. How to install non-free OpenCV modules](#16-how-to-install-non-free-opencv-modules)
+        - [1.7. Troubleshooting](#17-troubleshooting)
+    - [2. Usage](#2-usage)
+    - [3. Supported Local Features](#3-supported-local-features)
+    - [4. Supported Matchers](#4-supported-matchers)
+    - [5. Datasets](#5-datasets)
+        - [5.1. KITTI Datasets](#51-kitti-datasets)
+        - [5.2. TUM Datasets](#52-tum-datasets)
+    - [6. Camera Settings](#6-camera-settings)
+    - [7. Contributing to pySLAM](#7-contributing-to-pyslam)
+    - [8. References](#8-references)
+    - [9. Credits](#9-credits)
+    - [10. TODOs](#10-todos)
 
 <!-- /TOC -->
 
@@ -63,11 +64,10 @@ The framework has been developed and tested under **Ubuntu 18.04**. Use the avai
 
 ### Requirements
 
-* Python 3.6.9
-* Numpy (1.18.2)
+* Python 3.8.10
 * OpenCV (4.5.1 and newer versions supported, see [below](#how-to-install-non-free-opencv-modules) for a suggested python installation)
-* PyTorch (>= 1.4.0)
-* Tensorflow-gpu 1.14.0
+* PyTorch 2.3.1
+* Tensorflow 2.13.1
 
 If you run into troubles or performance issues, check this [TROUBLESHOOTING](./TROUBLESHOOTING.md) file.
 
@@ -187,6 +187,7 @@ At present time, the following feature **detectors** are supported:
 * *[R2D2](https://github.com/naver/r2d2)*
 * *[Key.Net](https://github.com/axelBarroso/Key.Net)*
 * *[DISK](https://arxiv.org/abs/2006.13566)*
+* *[Xfeat](https://arxiv.org/abs/2404.19174)*
 
 The following feature **descriptors** are supported: 
 * *[ORB](http://www.willowgarage.com/sites/default/files/orb_final.pdf)*  
@@ -215,6 +216,7 @@ The following feature **descriptors** are supported:
 * *[R2D2](https://github.com/naver/r2d2)*
 * *[BEBLID](https://raw.githubusercontent.com/iago-suarez/BEBLID/master/BEBLID_Boosted_Efficient_Binary_Local_Image_Descriptor.pdf)*
 * *[DISK](https://arxiv.org/abs/2006.13566)*
+* *[Xfeat](https://arxiv.org/abs/2404.19174)*
 
 You can find further information in the file [feature_types.py](./feature_types.py). Some of the local features consist of a *joint detector-descriptor*. You can start playing with the supported local features by taking a look at `test/cv/test_feature_manager.py` and `test/cv/test_feature_matching.py`.
 
@@ -223,6 +225,14 @@ In both the scripts `main_vo.py` and `main_slam.py`, you can create your favouri
 The function `feature_tracker_factory()` can be found in the file `feature_tracker.py`. Take a look at the file `feature_manager.py` for further details.
 
 **N.B.**: you just need a *single* python environment to be able to work with all the [supported local features](#supported-local-features)!
+
+---
+## Supported Matchers 
+
+  * *BF*: Brute force matcher on descriptors (with KNN)
+  * *[FLANN](https://www.semanticscholar.org/paper/Fast-Approximate-Nearest-Neighbors-with-Automatic-Muja-Lowe/35d81066cb1369acf4b6c5117fcbb862be2af350)* 
+  * *[XFeat](https://arxiv.org/abs/2404.19174)*      
+  * *[LightGlue](https://arxiv.org/abs/2306.13643)*
 
 --- 
 ## Datasets
@@ -332,6 +342,10 @@ Moreover, you may want to have a look at the OpenCV [guide](https://docs.opencv.
 * [Contextdesc](https://github.com/lzx551402/contextdesc)
 * [LFNet](https://github.com/vcg-uvic/lf-net-release)
 * [R2D2](https://github.com/naver/r2d2)
+* [BEBLID](https://raw.githubusercontent.com/iago-suarez/BEBLID/master/BEBLID_Boosted_Efficient_Binary_Local_Image_Descriptor.pdf)
+* [DISK](https://arxiv.org/abs/2006.13566)
+* [Xfeat](https://arxiv.org/abs/2404.19174)
+* [LightGlue](https://arxiv.org/abs/2306.13643)
 * [Key.Net](https://github.com/axelBarroso/Key.Net)
 * [Twitchslam](https://github.com/geohot/twitchslam)
 * [MonoVO](https://github.com/uoip/monoVO-python)  
