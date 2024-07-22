@@ -39,11 +39,11 @@ kVerbose = True
 # interface for pySLAM
 class SosnetFeature2D: 
     def __init__(self, do_cuda=True): 
-        print('Using SosnetFeature2D')   
+        Printer.normal(2,0,'Using SosnetFeature2D')   
         self.model_base_path = config.cfg.root_folder + '/thirdparty/SOSNet/'
 
         self.do_cuda = do_cuda & torch.cuda.is_available()
-        print('cuda:',self.do_cuda)        
+        Printer.normal(2,0,'cuda:',self.do_cuda)        
         device = torch.device("cuda:0" if self.do_cuda else "cpu")
                 
         torch.set_grad_enabled(False)
@@ -52,19 +52,19 @@ class SosnetFeature2D:
         # is enlarged to generate a patch from a keypoint
         self.mag_factor = 3        
         
-        print('==> Loading pre-trained network.')
+        Printer.normal(2,0,'==> Loading pre-trained network.')
         #init tfeat and load the trained weights
         self.model = sosnet_model.SOSNet32x32()
         self.net_name = 'liberty'   # liberty, hpatches_a, notredame, yosemite  (see folder /thirdparty/SOSNet/sosnet-weights)
         self.model.load_state_dict(torch.load(os.path.join(self.model_base_path, 'sosnet-weights', "sosnet-32x32-" + self.net_name + ".pth")))
         if self.do_cuda:
             self.model.cuda()
-            print('Extracting on GPU')
+            Printer.normal(2,0,'Extracting on GPU')
         else:
-            print('Extracting on CPU')
+            Printer.normal(2,0,'Extracting on CPU')
             self.model = model.cpu()        
         self.model.eval()  
-        print('==> Successfully loaded pre-trained network.')
+        Printer.normal(2,0,'==> Successfully loaded pre-trained network.')
     
     
     def compute_des(self, patches):                  
@@ -78,7 +78,7 @@ class SosnetFeature2D:
     
     
     def compute(self, frame, kps, mask=None):  #mask is a fake input  
-        #print('kps: ', kps)
+        #Printer.normal(2,0,'kps: ', kps)
         if len(kps)>0:
             #des = tfeat_utils.describe_opencv(self.model, frame, kps, 32, self.mag_factor)
             # extract the keypoint patches 
@@ -91,14 +91,14 @@ class SosnetFeature2D:
                 patches = extract_patches_array_cpp(frame, kps, patch_size=32, mag_factor=self.mag_factor)
             patches = np.asarray(patches)
             #if kVerbose:
-            #    print('patches.shape:',patches.shape)                
+            #    Printer.normal(2,0,'patches.shape:',patches.shape)                
             #if kVerbose:                         
-            #    print('patch elapsed: ', time.time()-t)
+            #    Printer.normal(2,0,'patch elapsed: ', time.time()-t)
             # compute descriptor by feeeding the full patch tensor to the network              
             des = self.compute_des(patches)            
         else:
             des = []
         if kVerbose:
-            print('descriptor: SOSNET, #features: ', len(kps), ', frame res: ', frame.shape[0:2])                  
+            Printer.normal(2,0,'descriptor: SOSNET, #features: ', len(kps), ', frame res: ', frame.shape[0:2])                  
         return kps, des
                       

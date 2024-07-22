@@ -40,6 +40,6 @@ class ShiTomasiDetector(object):
         else:
             kps = []
         #if kVerbose:
-        #    print('detector: Shi-Tomasi, #features: ', len(kps), ', #ref: ', self.num_features, ', frame res: ', frame.shape[0:2])      
+        #    Printer.normal(2,0,'detector: Shi-Tomasi, #features: ', len(kps), ', #ref: ', self.num_features, ', frame res: ', frame.shape[0:2])      
         return kps
 

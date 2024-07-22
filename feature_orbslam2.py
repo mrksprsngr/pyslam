@@ -33,7 +33,7 @@ kVerbose = True
 # interface for pySLAM 
 class Orbslam2Feature2D: 
     def __init__(self,num_features=2000, scale_factor=1.2, num_levels=8): 
-        print('Using Orbslam2Feature2D')
+        Printer.normal(2,0,'Using Orbslam2Feature2D')
         self.orb_extractor = ORBextractor(num_features, scale_factor, num_levels)
     
     # extract keypoints 
@@ -45,8 +45,8 @@ class Orbslam2Feature2D:
         return kps       
     
     def compute(self, img, kps, mask=None):
-        Printer.orange('WARNING: you are supposed to call detectAndCompute() for ORB2 instead of compute()')
-        Printer.orange('WARNING: ORB2 is recomputing both kps and des on input frame', img.shape)            
+        Printer.orange(1,'all','WARNING: you are supposed to call detectAndCompute() for ORB2 instead of compute()')
+        Printer.orange(1,'all','WARNING: ORB2 is recomputing both kps and des on input frame', img.shape)            
         return self.detectAndCompute(img)
         #return kps, np.array([])
         

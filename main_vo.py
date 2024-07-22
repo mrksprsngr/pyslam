@@ -156,11 +156,11 @@ if __name__ == "__main__":
             break
         img_id += 1
 
-    #print('press a key in order to exit...')
+    #Printer.normal(2,0,'press a key in order to exit...')
     #cv2.waitKey(0)
 
     if is_draw_traj_img:
-        print('saving map.png')
+        Printer.normal(2,0,'saving map.png')
         cv2.imwrite('map.png', traj_img)
     if is_draw_3d:
         if not kUsePangolin:

@@ -96,40 +96,86 @@ class Colors(object):
         lightgrey='\033[47m'
 
 class Printer(object):
+    
+    verbosity_levels = {        'quiet': 0,
+                                'verbose': 2,
+                                'normal': 1, 
+                                'very_verbose': 3, 
+                                'debug': 4, }
+    
+    verbosity_categories = {    'all': 0,
+                                'tracking': 1,
+                                'mapping': 2,
+                                'image_processing': 3,
+                                'initialization': 4,
+                                'gui': 5,
+                                'system': 6,
+                                'evaluation': 7}
+    
+    current_verbosity = 0
+    current_category = {0}
+ 
+    @staticmethod   
+    def set_verbosity(level, category='all'):
+        if isinstance(level, int) and level in Printer.verbosity_levels.values():
+            Printer.current_verbosity = level
+        elif isinstance(level, str) and level in Printer.verbosity_levels.keys():
+            Printer.current_verbosity = Printer.verbosity_levels[level]
+        else:
+            raise ValueError(f"Invalid verbosity level: {level}")
+        
+        selected_categories = set()
+        for item_category in category:
+            if isinstance(item_category, int) and item_category in Printer.verbosity_categories.values():
+                selected_categories.add(item_category)
+            elif isinstance(item_category, str) and item_category in Printer.verbosity_categories.keys():
+                selected_categories.add(Printer.verbosity_categories[item_category])
+            else:
+                raise ValueError(f"Invalid category: {item_category}")
+        
+        Printer.current_category = selected_categories
+        
     @staticmethod
-    def red(*args, **kwargs):
-        print(Colors.fg.red, *args, **kwargs)
-        print(Colors.reset, end="")
+    def _print(color, level, category, *args, **kwargs):
+        if isinstance(category, int) and category in Printer.verbosity_categories.values():
+            item_category = category
+        elif isinstance(category, str) and category in Printer.verbosity_categories.keys():
+            item_category = Printer.verbosity_categories[category]
+        if Printer.current_verbosity >= level and (0 in Printer.current_category or (item_category in Printer.current_category)):
+            print(color, *args, **kwargs)
+            print(Colors.reset, end="")
+            
+    @staticmethod
+    def red(level, category, *args, **kwargs):
+        Printer._print(Colors.fg.red, level, category, *args, **kwargs)
+    
+    @staticmethod
+    def normal(level, category, *args, **kwargs):
+        Printer._print(Colors.fg.lightgrey, level, category, *args, **kwargs)
 
     @staticmethod
-    def green(*args, **kwargs):
-        print(Colors.fg.green, *args, **kwargs)
-        print(Colors.reset, end="")
+    def green(level, category, *args, **kwargs):
+        Printer._print(Colors.fg.green, level, category, *args, **kwargs)
 
     @staticmethod
-    def blue(*args, **kwargs):
-        print(Colors.fg.blue, *args, **kwargs)
-        print(Colors.reset, end="")        
-        
+    def blue(level, category, *args, **kwargs):
+        Printer._print(Colors.fg.blue, level, category, *args, **kwargs)
+
     @staticmethod
-    def cyan(*args, **kwargs):
-        print(Colors.fg.cyan, *args, **kwargs)
-        print(Colors.reset, end="")             
-        
+    def cyan(level, category, *args, **kwargs):
+        Printer._print(Colors.fg.cyan, level, category, *args, **kwargs)
+
     @staticmethod
-    def orange(*args, **kwargs):
-        print(Colors.fg.orange, *args, **kwargs)
-        print(Colors.reset, end="")     
-        
+    def orange(level, category, *args, **kwargs):
+        Printer._print(Colors.fg.orange, level, category, *args, **kwargs)
+
     @staticmethod
-    def purple(*args, **kwargs):
-        print(Colors.fg.purple, *args, **kwargs)
-        print(Colors.reset, end="")  
-        
+    def purple(level, category, *args, **kwargs):
+        Printer._print(Colors.fg.purple, level, category, *args, **kwargs)
+
     @staticmethod
-    def yellow(*args, **kwargs):
-        print(Colors.fg.yellow, *args, **kwargs)
-        print(Colors.reset, end="")                                   
+    def yellow(level, category, *args, **kwargs):
+        Printer._print(Colors.fg.yellow, level, category, *args, **kwargs)                                     
 
     @staticmethod
     def error(*args, **kwargs):
@@ -229,7 +275,7 @@ def import_from(module, name, method=None):
     except: 
         if method is not None: 
             name = name + '.' + method 
-        Printer.orange('WARNING: cannot import ' + name + ' from ' + module + ', check the file TROUBLESHOOTING.md')    
+        Printer.orange(1,'all','WARNING: cannot import ' + name + ' from ' + module + ', check the file TROUBLESHOOTING.md')    
         return None   
     
     

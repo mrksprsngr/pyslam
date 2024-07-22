@@ -43,10 +43,10 @@ kVerbose = True
 
 def load_network(model_fn): 
     checkpoint = torch.load(model_fn)
-    print("\n>> Creating net = " + checkpoint['net']) 
+    Printer.normal(2,0,"\n>> Creating net = " + checkpoint['net']) 
     net = eval(checkpoint['net'])
     nb_of_weights = common.model_size(net)
-    print(f" ( Model size: {nb_of_weights/1000:.0f}K parameters )")
+    Printer.normal(2,0,f" ( Model size: {nb_of_weights/1000:.0f}K parameters )")
 
     # initialization
     weights = checkpoint['state_dict']
@@ -95,7 +95,7 @@ def extract_multiscale( net, img, detector, scale_f=2**0.25,
     while  s+0.001 >= max(min_scale, min_size / max(H,W)):
         if s-0.001 <= min(max_scale, max_size / max(H,W)):
             nh, nw = img.shape[2:]
-            if verbose: print(f"extracting at scale x{s:.02f} = {nw:4d}x{nh:3d} - level {level}")
+            if verbose: Printer.normal(2,0,f"extracting at scale x{s:.02f} = {nw:4d}x{nh:3d} - level {level}")
             # extract descriptors
             with torch.no_grad():
                 res = net(imgs=[img])
@@ -166,11 +166,11 @@ class R2d2Feature2D:
                  reliability_thr   = 0.7,   
                  repeatability_thr = 0.7,  
                  do_cuda=True):    
-        print('Using R2d2Feature2D')    
+        Printer.normal(2,0,'Using R2d2Feature2D')    
         self.lock = RLock()             
         self.model_base_path = config.cfg.root_folder + '/thirdparty/r2d2'        
         self.model_weights_path = self.model_base_path + '/models/r2d2_WASF_N16.pt'
-        #print('model_weights_path:',self.model_weights_path)
+        #Printer.normal(2,0,'model_weights_path:',self.model_weights_path)
         
         self.pts = []
         self.kps = []        
@@ -193,7 +193,7 @@ class R2d2Feature2D:
         self.gpus = gpus 
         self.do_cuda = common.torch_set_gpu(gpus)   
                                             
-        print('==> Loading pre-trained network.')   
+        Printer.normal(2,0,'==> Loading pre-trained network.')   
                   
         self.net = load_network(self.model_weights_path)
         if self.do_cuda: self.net = self.net.cuda()
@@ -201,7 +201,7 @@ class R2d2Feature2D:
         # create the non-maxima detector
         self.detector = NonMaxSuppression(rel_thr=reliability_thr, rep_thr=repeatability_thr)  
         
-        print('==> Successfully loaded pre-trained network.')            
+        Printer.normal(2,0,'==> Successfully loaded pre-trained network.')            
             
     
     def compute_kps_des(self,img):     
@@ -240,7 +240,7 @@ class R2d2Feature2D:
             self.frame = frame         
             self.kps, self.des = self.compute_kps_des(frame)            
             if kVerbose:
-                print('detector: R2D2 , descriptor: R2D2 , #features: ', len(self.kps), ', frame res: ', frame.shape[0:2])                  
+                Printer.normal(2,0,'detector: R2D2 , descriptor: R2D2 , #features: ', len(self.kps), ', frame res: ', frame.shape[0:2])                  
             return self.kps, self.des
     
            
@@ -256,7 +256,7 @@ class R2d2Feature2D:
     def compute(self, frame, kps=None, mask=None): # kps is a fake input, mask is a fake input
         with self.lock:        
             if self.frame is not frame:
-                Printer.orange('WARNING: R2D2 is recomputing both kps and des on last input frame', frame.shape)            
+                Printer.orange(1,'all','WARNING: R2D2 is recomputing both kps and des on last input frame', frame.shape)            
                 self.detectAndCompute(frame)
             return self.kps, self.des                 
            

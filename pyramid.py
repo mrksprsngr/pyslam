@@ -70,7 +70,7 @@ class Pyramid(object):
         for i in range(1,num_levels):
             self.scale_factors[i]=self.scale_factors[i-1]*self.scale_factor
             self.inv_scale_factors[i]=1.0/self.scale_factors[i]
-        #print('self.inv_scale_factors: ', self.inv_scale_factors)                 
+        #Printer.normal(2,0,'self.inv_scale_factors: ', self.inv_scale_factors)                 
 
 
     def compute(self, frame):
@@ -83,7 +83,7 @@ class Pyramid(object):
         elif self.pyramid_type == PyramidType.GAUSS_PYRAMID:
             return self.computeGauss(frame) 
         else: 
-            Printer.orange('Pyramid - unknown type')    
+            Printer.orange(1,'all','Pyramid - unknown type')    
             return self.computeResizePyramid(frame)                    
 
 

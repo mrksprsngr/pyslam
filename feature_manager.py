@@ -151,7 +151,7 @@ class FeatureManager(object):
         # --------------------------------------------- #
         # manage different opencv versions  
         # --------------------------------------------- #
-        print("using opencv ", cv2.__version__)
+        Printer.normal(2,0,"using opencv ", cv2.__version__)
         # check opencv version in order to use the right modules 
         opencv_major =  int(cv2.__version__.split('.')[0])
         opencv_minor =  int(cv2.__version__.split('.')[1])
@@ -250,7 +250,7 @@ class FeatureManager(object):
                                     #FeatureDescriptorTypes.BOOST_DESC # [OK]  BOOST_DESC seems to properly rectify each keypoint patch size (https://github.com/opencv/opencv_contrib/blob/master/modules/xfeatures2d/src/boostdesc.cpp#L346) 
                                     ]:
             self.scale_factor = 2  # the above descriptors work on octave layers with a scale_factor=2!
-            Printer.orange('forcing scale factor=2 for detector', self.descriptor_type.name)
+            Printer.orange(1,'all','forcing scale factor=2 for detector', self.descriptor_type.name)
             
         self.orb_params = dict(nfeatures=num_features,
                                scaleFactor=self.scale_factor,
@@ -389,7 +389,7 @@ class FeatureManager(object):
             #detector = ShiTomasiDetector(self.num_features)  
             #self._feature_detector = self.MSD_create(detector) 
             self._feature_detector = self.MSD_create()   
-            print('MSD detector info:',dir(self._feature_detector))
+            Printer.normal(2,0,'MSD detector info:',dir(self._feature_detector))
             #self.use_bock_adaptor = True  # override a block adaptor?           
             #self.use_pyramid_adaptor = self.num_levels > 1   # override a pyramid adaptor?     
             #self.pyramid_type = PyramidType.GAUSS_PYRAMID 
@@ -491,7 +491,7 @@ class FeatureManager(object):
         # init descriptor 
         # --------------------------------------------- #                     
         if self.is_detector_equal_to_descriptor:     
-            Printer.green('using same detector and descriptor object: ', self.detector_type.name)
+            Printer.green(1,'all','using same detector and descriptor object: ', self.detector_type.name)
             self._feature_descriptor = self._feature_detector
         else:      
             # detector and descriptors are different             
@@ -531,13 +531,13 @@ class FeatureManager(object):
                 #
             elif self.descriptor_type == FeatureDescriptorTypes.KAZE:     
                 if not self.is_detector_equal_to_descriptor:
-                    Printer.red('WARNING: KAZE descriptors can only be used with KAZE or AKAZE keypoints.')  # https://kyamagu.github.io/mexopencv/matlab/AKAZE.html
+                    Printer.red(1,'all','WARNING: KAZE descriptors can only be used with KAZE or AKAZE keypoints.')  # https://kyamagu.github.io/mexopencv/matlab/AKAZE.html
                 self._feature_descriptor = self.KAZE_create(nOctaves=self.num_levels_descriptor) 
                 #
                 #                
             elif self.descriptor_type == FeatureDescriptorTypes.AKAZE:     
                 if not self.is_detector_equal_to_descriptor:
-                    Printer.red('WARNING: AKAZE descriptors can only be used with KAZE or AKAZE keypoints.') # https://kyamagu.github.io/mexopencv/matlab/AKAZE.html     
+                    Printer.red(1,'all','WARNING: AKAZE descriptors can only be used with KAZE or AKAZE keypoints.') # https://kyamagu.github.io/mexopencv/matlab/AKAZE.html     
                 self._feature_descriptor = self.AKAZE_create(nOctaves=self.num_levels_descriptor) 
                 #
                 #
@@ -686,7 +686,7 @@ class FeatureManager(object):
         try: 
             self.norm_type = FeatureInfo.norm_type[self.descriptor_type]
         except:
-            Printer.red('You did not set the norm type for: ', self.descriptor_type.name)              
+            Printer.red(1,'all','You did not set the norm type for: ', self.descriptor_type.name)              
             raise ValueError("Unmanaged norm type for feature descriptor %s" % self.descriptor_type.name)     
         
         # set descriptor distance functions  
@@ -701,7 +701,7 @@ class FeatureManager(object):
         try: 
             Parameters.kMaxDescriptorDistance = FeatureInfo.max_descriptor_distance[self.descriptor_type]
         except: 
-            Printer.red('You did not set the reference max descriptor distance for: ', self.descriptor_type.name)                                                         
+            Printer.red(1,'all','You did not set the reference max descriptor distance for: ', self.descriptor_type.name)                                                         
             raise ValueError("Unmanaged max descriptor distance for feature descriptor %s" % self.descriptor_type.name)                
         Parameters.kMaxDescriptorDistanceSearchEpipolar = Parameters.kMaxDescriptorDistance                    
                 
@@ -710,7 +710,7 @@ class FeatureManager(object):
         # --------------------------------------------- #      
         
         if not self.oriented_features:
-            Printer.orange('WARNING: using NON-ORIENTED features: ', self.detector_type.name,'-',self.descriptor_type.name, ' (i.e. kp.angle=0)')     
+            Printer.orange(1,'all','WARNING: using NON-ORIENTED features: ', self.detector_type.name,'-',self.descriptor_type.name, ' (i.e. kp.angle=0)')     
                         
         if self.is_detector_equal_to_descriptor and \
             ( self.detector_type == FeatureDetectorTypes.SIFT or 
@@ -752,7 +752,7 @@ class FeatureManager(object):
     # initialize scale factors, sigmas for each octave level; 
     # these are used for managing image pyramids and weighting (information matrix) reprojection error terms in the optimization
     def init_sigma_levels(self): 
-        print('num_levels: ', self.num_levels)               
+        Printer.normal(2,0,'num_levels: ', self.num_levels)               
         num_levels = max(kNumLevelsInitSigma, self.num_levels)    
         self.inv_scale_factor = 1./self.scale_factor      
         self.scale_factors = np.zeros(num_levels)
@@ -772,10 +772,10 @@ class FeatureManager(object):
         for i in range(num_levels):
             self.inv_scale_factors[i] = 1.0/self.scale_factors[i]
             self.inv_level_sigmas2[i] = 1.0/self.level_sigmas2[i]
-        #print('self.scale_factor: ', self.scale_factor)                      
-        #print('self.scale_factors: ', self.scale_factors)
-        #print('self.level_sigmas: ', self.level_sigmas)                
-        #print('self.inv_scale_factors: ', self.inv_scale_factors)          
+        #Printer.normal(2,0,'self.scale_factor: ', self.scale_factor)                      
+        #Printer.normal(2,0,'self.scale_factors: ', self.scale_factors)
+        #Printer.normal(2,0,'self.level_sigmas: ', self.level_sigmas)                
+        #Printer.normal(2,0,'self.inv_scale_factors: ', self.inv_scale_factors)          
         
         
     # initialize scale factors, sigmas for each octave level; 
@@ -783,14 +783,14 @@ class FeatureManager(object):
     # this method can be used only when the following mapping is adopted for SIFT:  
     #   keypoint.octave = (unpacked_octave+1)*3+unpacked_layer  where S=3 is the number of levels per octave
     def init_sigma_levels_sift(self): 
-        print('initializing SIFT sigma levels')
-        print('num_levels: ', self.num_levels)          
+        Printer.normal(2,0,'initializing SIFT sigma levels')
+        Printer.normal(2,0,'num_levels: ', self.num_levels)          
         self.num_levels = 3*self.num_levels + 3   # we map: level=keypoint.octave = (unpacked_octave+1)*3+unpacked_layer  where S=3 is the number of scales per octave
         num_levels = max(kNumLevelsInitSigma, self.num_levels) 
-        #print('num_levels: ', num_levels) 
+        #Printer.normal(2,0,'num_levels: ', num_levels) 
         # N.B: if we adopt the mapping: keypoint.octave = (unpacked_octave+1)*3+unpacked_layer 
         # then we can consider a new virtual scale_factor = 2^(1/3) (used between two contiguous layers of the same octave)
-        print('original scale factor: ', self.scale_factor)
+        Printer.normal(2,0,'original scale factor: ', self.scale_factor)
         self.scale_factor = math.pow(2,1./3)    
         self.inv_scale_factor = 1./self.scale_factor      
         self.scale_factors = np.zeros(num_levels)
@@ -821,10 +821,10 @@ class FeatureManager(object):
         for i in range(num_levels):
             self.inv_scale_factors[i] = 1.0/self.scale_factors[i]
             self.inv_level_sigmas2[i] = 1.0/self.level_sigmas2[i]
-        #print('self.scale_factor: ', self.scale_factor)                      
-        #print('self.scale_factors: ', self.scale_factors)
-        #print('self.level_sigmas: ', self.level_sigmas)                
-        #print('self.inv_scale_factors: ', self.inv_scale_factors)             
+        #Printer.normal(2,0,'self.scale_factor: ', self.scale_factor)                      
+        #Printer.normal(2,0,'self.scale_factors: ', self.scale_factors)
+        #Printer.normal(2,0,'self.level_sigmas: ', self.level_sigmas)                
+        #Printer.normal(2,0,'self.inv_scale_factors: ', self.inv_scale_factors)             
 
 
     # filter matches by using 
@@ -898,7 +898,7 @@ class FeatureManager(object):
             imgDraw = cv2.drawKeypoints(frame, kps, None, color=(0,255,0), flags=0)
             cv2.imshow('detected keypoints',imgDraw)            
         if kVerbose:
-            print('detector:',self.detector_type.name,', #features:', len(kps),', [kp-filter:',filter_name,']')    
+            Printer.normal(2,0,'detector:',self.detector_type.name,', #features:', len(kps),', [kp-filter:',filter_name,']')    
         return kps        
     
     
@@ -912,7 +912,7 @@ class FeatureManager(object):
         if filter: 
             kps, des, filter_name  = self.filter_keypoints(self.keypoint_filter_type, frame, kps, des)            
         if kVerbose:
-            print('descriptor:',self.descriptor_type.name,', #features:', len(kps),', [kp-filter:',filter_name,']')           
+            Printer.normal(2,0,'descriptor:',self.descriptor_type.name,', #features:', len(kps),', [kp-filter:',filter_name,']')           
         return kps, des 
 
 
@@ -945,8 +945,8 @@ class FeatureManager(object):
                 # detector = descriptor => call them together with detectAndCompute() method    
                 kps, des = self._feature_detector.detectAndCompute(frame, mask)   
                 if kVerbose:
-                    print('detector:', self.detector_type.name,', #features:',len(kps))           
-                    print('descriptor:', self.descriptor_type.name,', #features:',len(kps))                      
+                    Printer.normal(2,0,'detector:', self.detector_type.name,', #features:',len(kps))           
+                    Printer.normal(2,0,'descriptor:', self.descriptor_type.name,', #features:',len(kps))                      
             else:
                 # detector and descriptor are different => call them separately 
                 # 1. first, detect keypoint locations  
@@ -954,8 +954,8 @@ class FeatureManager(object):
                 # 2. then, compute descriptors        
                 kps, des = self._feature_descriptor.compute(frame, kps)  
                 if kVerbose:
-                    #print('detector: ', self.detector_type.name, ', #features: ', len(kps))           
-                    print('descriptor: ', self.descriptor_type.name, ', #features: ', len(kps))   
+                    #Printer.normal(2,0,'detector: ', self.detector_type.name, ', #features: ', len(kps))           
+                    Printer.normal(2,0,'descriptor: ', self.descriptor_type.name, ', #features: ', len(kps))   
         # filter keypoints   
         filter_name = 'NONE'
         if filter:                                                                 
@@ -965,7 +965,7 @@ class FeatureManager(object):
            self.detector_type == FeatureDetectorTypes.CONTEXTDESC :
             unpackSiftOctaveKps(kps, method=UnpackOctaveMethod.INTRAL_LAYERS)           
         if kVerbose:
-            print('detector:',self.detector_type.name,', descriptor:', self.descriptor_type.name,', #features:', len(kps),' (#ref:', self.num_features, '), [kp-filter:',filter_name,']')                                         
+            Printer.normal(2,1,'detector:',self.detector_type.name,', descriptor:', self.descriptor_type.name,', #features:', len(kps),' (#ref:', self.num_features, '), [kp-filter:',filter_name,']')                                         
         self.debug_print(kps)             
         return kps, des             
  
@@ -974,19 +974,19 @@ class FeatureManager(object):
         if False: 
             # raw print of all keypoints 
             for k in kps:
-                print("response: ", k.response, "\t, size: ", k.size, "\t, octave: ", k.octave, "\t, angle: ", k.angle)
+                Printer.normal(2,0,"response: ", k.response, "\t, size: ", k.size, "\t, octave: ", k.octave, "\t, angle: ", k.angle)
         if False: 
             # generate a rough histogram for keypoint sizes 
             kps_sizes = [kp.size for kp in kps] 
             kps_sizes_histogram = np.histogram(kps_sizes, bins=10)
-            print('size-histogram: \n', list(zip(kps_sizes_histogram[1],kps_sizes_histogram[0])))   
+            Printer.normal(2,0,'size-histogram: \n', list(zip(kps_sizes_histogram[1],kps_sizes_histogram[0])))   
             # generate histogram at level 0
             kps_sizes = [kp.size for kp in kps if kp.octave==1] 
             kps_sizes_histogram = np.histogram(kps_sizes, bins=10)
-            print('size-histogram at level 0: \n', list(zip(kps_sizes_histogram[1],kps_sizes_histogram[0])))          
+            Printer.normal(2,0,'size-histogram at level 0: \n', list(zip(kps_sizes_histogram[1],kps_sizes_histogram[0])))          
         if False: 
             # count points for each octave => generate an octave histogram 
             kps_octaves = [k.octave for k in kps]
             kps_octaves = Counter(kps_octaves)
-            print('levels-histogram: ', kps_octaves.most_common(12))    
+            Printer.normal(2,0,'levels-histogram: ', kps_octaves.most_common(12))    
                     

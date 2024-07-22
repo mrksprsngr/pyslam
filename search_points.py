@@ -75,7 +75,7 @@ def propagate_map_point_matches(f_ref, f_cur, idxs_ref, idxs_cur,
             
     if check_orientation:            
         valid_match_idxs = rot_histo.get_valid_idxs()     
-        print('checking orientation consistency - valid matches % :', len(valid_match_idxs)/max(1,len(idxs_cur))*100,'% of ', len(idxs_cur),'matches')
+        Printer.normal(2,1,'checking orientation consistency - valid matches % :', len(valid_match_idxs)/max(1,len(idxs_cur))*100,'% of ', len(idxs_cur),'matches')
         #print('rotation histogram: ', rot_histo)
         idx_ref_out = np.array(idx_ref_out)[valid_match_idxs]
         idx_cur_out = np.array(idx_cur_out)[valid_match_idxs]
@@ -184,7 +184,7 @@ def search_frame_by_projection(f_ref, f_cur,
             
     if check_orientation:            
         valid_match_idxs = rot_histo.get_valid_idxs()     
-        print('checking orientation consistency - valid matches % :', len(valid_match_idxs)/max(1,len(idxs_cur))*100,'% of ', len(idxs_cur),'matches')
+        Printer.normal(2,1,'checking orientation consistency - valid matches % :', len(valid_match_idxs)/max(1,len(idxs_cur))*100,'% of ', len(idxs_cur),'matches')
         #print('rotation histogram: ', rot_histo)
         idxs_ref = np.array(idxs_ref)[valid_match_idxs]
         idxs_cur = np.array(idxs_cur)[valid_match_idxs]
@@ -331,11 +331,11 @@ def search_frame_for_triangulation(kf1, kf2, idxs1=None, idxs2=None,
     # else:    
     medianDepth = kf2.compute_points_median_depth()
     if medianDepth == -1:
-        Printer.orange("search for triangulation: f2 with no points")        
+        Printer.orange(1,'all',"search for triangulation: f2 with no points")        
         medianDepth = kf1.compute_points_median_depth()        
     ratioBaselineDepth = baseline/medianDepth
     if ratioBaselineDepth < Parameters.kMinRatioBaselineDepth:  
-        Printer.orange("search for triangulation: impossible with too low ratioBaselineDepth!")
+        Printer.orange(1,'all',"search for triangulation: impossible with too low ratioBaselineDepth!")
         return idxs1_out, idxs2_out, num_found_matches, img2_epi # EXIT        
 
     # compute the fundamental matrix between the two frames by using their estimated poses 
@@ -401,7 +401,7 @@ def search_frame_for_triangulation(kf1, kf2, idxs1=None, idxs2=None,
     num_found_matches = len(idxs1_out)
              
     if __debug__:
-        print('search_frame_for_triangulation - timer: ', timer.elapsed())
+        Printer.normal(3,4,'search_frame_for_triangulation - timer: ', timer.elapsed())
 
     return idxs1_out, idxs2_out, num_found_matches, img2_epi
 
@@ -416,7 +416,7 @@ def search_and_fuse(points, keyframe,
     fused_pts_count = 0
     Ow = keyframe.Ow 
     if len(points) == 0:
-        Printer.red('search_and_fuse - no points')        
+        Printer.red(1,'all','search_and_fuse - no points')        
         return 
         
     # get all matched points of keyframe 
@@ -424,14 +424,14 @@ def search_and_fuse(points, keyframe,
     good_pts = points[good_pts_idxs] 
      
     if len(good_pts_idxs) == 0:
-        Printer.red('search_and_fuse - no matched points')
+        Printer.red(1,'all','search_and_fuse - no matched points')
         return
     
     # check if points are visible 
     good_pts_visible, good_projs, good_depths, good_dists = keyframe.are_visible(good_pts)
     
     if len(good_pts_visible) == 0:
-        Printer.red('search_and_fuse - no visible points')
+        Printer.red(1,'all','search_and_fuse - no visible points')
         return    
     
     predicted_levels = predict_detection_levels(good_pts, good_dists) 

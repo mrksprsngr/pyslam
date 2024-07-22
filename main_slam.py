@@ -77,7 +77,7 @@ if __name__ == "__main__":
     tracker_config['num_features'] = num_features
     tracker_config['tracker_type'] = tracker_type
     
-    print('tracker_config: ',tracker_config)    
+    Printer.normal(2,0,'tracker_config: ',tracker_config)    
     feature_tracker = feature_tracker_factory(**tracker_config)
     
     # create SLAM object 
@@ -96,15 +96,15 @@ if __name__ == "__main__":
     do_step = False   
     is_paused = False 
     
-    img_id = 0  #180, 340, 400   # you can start from a desired frame id if needed 
+    img_id = 2650  #180, 340, 400   # you can start from a desired frame id if needed 
     while dataset.isOk():
             
         if not is_paused: 
-            print('..................................')
-            print('image: ', img_id)                
+            Printer.normal(2,0,'..................................')
+            Printer.normal(2,0,'image: ', img_id)                
             img = dataset.getImageColor(img_id)
             if img is None:
-                print('image is empty')
+                Printer.normal(2,0,'image is empty')
                 getchar()
             timestamp = dataset.getTimestamp()          # get current timestamp 
             next_timestamp = dataset.getNextTimestamp() # get next timestamp 
@@ -146,7 +146,7 @@ if __name__ == "__main__":
                 
                 duration = time.time()-time_start 
                 if(frame_duration > duration):
-                    print('sleeping for frame')
+                    Printer.normal(2,0,'sleeping for frame')
                     time.sleep(frame_duration-duration)        
                     
             img_id += 1  
@@ -174,7 +174,7 @@ if __name__ == "__main__":
         
         if key == 'd' or (key_cv == ord('d')):
             do_step = not do_step  
-            Printer.green('do step: ', do_step) 
+            Printer.green(1,'all','do step: ', do_step) 
                       
         if key == 'q' or (key_cv == ord('q')):
             if display2d is not None:

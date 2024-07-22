@@ -67,9 +67,9 @@ class FeatureMatcher(object):
     # output: idx1, idx2  (vectors of corresponding indexes in des1 and des2, respectively)
     def match(self, des1, des2, ratio_test=None):
         if kVerbose:
-            print(self.matcher_name,', norm ', self.norm_type) 
-        #print('des1.shape:',des1.shape,' des2.shape:',des2.shape)    
-        #print('des1.dtype:',des1.dtype,' des2.dtype:',des2.dtype)                   
+            Printer.normal(2,0,self.matcher_name,', norm ', self.norm_type) 
+        #Printer.normal(2,0,'des1.shape:',des1.shape,' des2.shape:',des2.shape)    
+        #Printer.normal(2,0,'des1.dtype:',des1.dtype,' des2.dtype:',des2.dtype)                   
         matches = self.matcher.knnMatch(des1, des2, k=2)  #knnMatch(queryDescriptors,trainDescriptors)
         self.matches = matches
         return self.goodMatches(matches, des1, des2, ratio_test)          
@@ -136,7 +136,7 @@ class FeatureMatcher(object):
             ransac_method = cv2.RANSAC
         _, mask = cv2.findFundamentalMat(good_kps1, good_kps2, ransac_method, err_thld, confidence=0.999)
         n_inlier = np.count_nonzero(mask)
-        print(info, 'n_putative', len(good_matches), 'n_inlier', n_inlier)
+        Printer.normal(2,0,info, 'n_putative', len(good_matches), 'n_inlier', n_inlier)
         return idx1, idx2, good_matches, mask
     
             
@@ -166,7 +166,7 @@ class FeatureMatcher(object):
                 else:
                     if m.distance < dist: 
                         # we have already a match for trainIdx: if stored match is worse => replace it
-                        #print("double match on trainIdx: ", m.trainIdx)
+                        #Printer.normal(2,0,"double match on trainIdx: ", m.trainIdx)
                         index = index_match[m.trainIdx]
                         assert(idx2[index] == m.trainIdx) 
                         idx1[index]=m.queryIdx

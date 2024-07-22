@@ -37,7 +37,7 @@ try:
     import pyslam_utils
 except:
     kPySlamUtilsAvailable = False 
-    Printer.orange('WARNING: cannot import pyslam_utils')
+    Printer.orange(1,'all','WARNING: cannot import pyslam_utils')
       
 from parameters import Parameters 
 

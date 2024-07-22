@@ -32,6 +32,7 @@ from mpl_toolkits import mplot3d
 import multiprocessing as mp 
 from multiprocessing import Process, Queue, Lock, RLock, Value
 import ctypes
+from utils_sys import Printer
 
 kPlotSleep = 0.04
 kVerbose = False 
@@ -74,16 +75,17 @@ class Mplot2d:
     def quit(self):
         self.is_running.value = 0
         self.vp.join(timeout=5)
+        Printer.normal(1,5,"Mplot2d stopped.")
 
     def drawer_thread(self, queue, lock, key, is_running):  
         self.init(lock) 
-        #print('starting drawer_thread')
+        #Printer.normal(2,0,'starting drawer_thread')
         while is_running.value == 1:
-            #print('drawer_refresh step')
+            #Printer.normal(2,0,'drawer_refresh step')
             self.drawer_refresh(queue, lock)                                    
             if kUseFigCanvasDrawIdle:               
                 time.sleep(kPlotSleep) 
-        print(mp.current_process().name,'closing fig ', self.fig)  
+        Printer.normal(2,0,mp.current_process().name,'closing fig ', self.fig)  
         plt.close(self.fig)              
 
     def drawer_refresh(self, queue, lock):            
@@ -91,7 +93,7 @@ class Mplot2d:
             self.got_data = True           
             self.data = queue.get()          
             xy_signal, name, color, marker = self.data 
-            #print(mp.current_process().name,"refreshing : signal ", name)            
+            #Printer.normal(2,0,mp.current_process().name,"refreshing : signal ", name)            
             if name in self.handle_map:
                 handle = self.handle_map[name]
                 handle.set_xdata(np.append(handle.get_xdata(), xy_signal[0]))
@@ -99,16 +101,16 @@ class Mplot2d:
             else: 
                 handle, = self.ax.plot(xy_signal[0], xy_signal[1], c=color, marker=marker, label=name)    
                 self.handle_map[name] = handle  
-        #print(mp.current_process().name,"got data: ", self.got_data) 
+        #Printer.normal(2,0,mp.current_process().name,"got data: ", self.got_data) 
         if self.got_data is True:                   
             self.plot_refresh(lock)
 
     def on_key_press(self, event):
-        #print(mp.current_process().name,"key event pressed...", self._key)     
+        #Printer.normal(2,0,mp.current_process().name,"key event pressed...", self._key)     
         self.key.value = ord(event.key) # conver to int 
         
     def on_key_release(self, event):
-        #print(mp.current_process().name,"key event released...", self._key)             
+        #Printer.normal(2,0,mp.current_process().name,"key event released...", self._key)             
         self.key.value = 0  # reset to no key symbol
         
     def get_key(self):
@@ -117,7 +119,7 @@ class Mplot2d:
     def init(self, lock):    
         lock.acquire()      
         if kVerbose:
-            print(mp.current_process().name,"initializing...") 
+            Printer.normal(2,0,mp.current_process().name,"initializing...") 
         self.fig = plt.figure()
         if kUseFigCanvasDrawIdle:
             self.fig.canvas.draw_idle() 
@@ -126,7 +128,7 @@ class Mplot2d:
         #self.ax = self.fig.gca(projection='3d')
         #self.ax = self.fig.gca()
         self.ax = self.fig.add_subplot(111)   
-        if self.title is not '':
+        if self.title != '':
             self.ax.set_title(self.title) 
         self.ax.set_xlabel(self.xlabel)
         self.ax.set_ylabel(self.ylabel)	   
@@ -177,7 +179,7 @@ class Mplot2d:
 
     def plot_refresh(self, lock):
         if kVerbose:        
-            print(mp.current_process().name,"refreshing ", self.title)          
+            Printer.normal(2,5,mp.current_process().name,"refreshing ", self.title)          
         lock.acquire()         
         self.setAxis()
         if not kUseFigCanvasDrawIdle:        
@@ -222,7 +224,7 @@ class Mplot3d:
             self.drawer_refresh(queue, lock)   
             if kUseFigCanvasDrawIdle:               
                 time.sleep(kPlotSleep)    
-        print(mp.current_process().name,'closing fig ', self.fig)     
+        Printer.normal(2,0,mp.current_process().name,'closing fig ', self.fig)     
         plt.close(self.fig)                                 
 
     def drawer_refresh(self, queue, lock):            
@@ -242,11 +244,11 @@ class Mplot3d:
             self.plot_refresh(lock)          
 
     def on_key_press(self, event):
-        #print(mp.current_process().name,"key event pressed...", self._key)     
+        #Printer.normal(2,0,mp.current_process().name,"key event pressed...", self._key)     
         self.key.value = ord(event.key) # conver to int 
         
     def on_key_release(self, event):
-        #print(mp.current_process().name,"key event released...", self._key)             
+        #Printer.normal(2,0,mp.current_process().name,"key event released...", self._key)             
         self.key.value = 0  # reset to no key symbol
         
     def get_key(self):
@@ -255,14 +257,14 @@ class Mplot3d:
     def init(self, lock):
         lock.acquire()      
         if kVerbose:
-            print(mp.current_process().name,"initializing...") 
+            Printer.normal(2,0,mp.current_process().name,"initializing...") 
         self.fig = plt.figure()
         if kUseFigCanvasDrawIdle:
             self.fig.canvas.draw_idle()         
         self.fig.canvas.mpl_connect('key_press_event', self.on_key_press)       
         self.fig.canvas.mpl_connect('key_release_event', self.on_key_release)             
         self.ax = self.fig.gca(projection='3d')
-        if self.title is not '':
+        if self.title != '':
             self.ax.set_title(self.title)     
         self.ax.set_xlabel('X axis')
         self.ax.set_ylabel('Y axis')
@@ -323,7 +325,7 @@ class Mplot3d:
 
     def plot_refresh(self, lock):
         if kVerbose:        
-            print(mp.current_process().name,"refreshing ", self.title)          
+            Printer.normal(2,0,mp.current_process().name,"refreshing ", self.title)          
         lock.acquire()          
         self.setAxis()
         if not kUseFigCanvasDrawIdle:        

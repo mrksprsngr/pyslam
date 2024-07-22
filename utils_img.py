@@ -44,11 +44,11 @@ def combine_images_horizontally(img1, img2):
 # create a generator over an image to extract 'row_divs' x 'col_divs' sub-blocks 
 def img_blocks(img, row_divs, col_divs):
     rows, cols = img.shape[:2]
-    #print('img.shape: ', img.shape)
+    #Printer.normal(2,1,'img.shape: ', img.shape)
     xs = np.uint32(np.rint(np.linspace(0, cols, num=col_divs+1)))   # num = Number of samples to generate
     ys = np.uint32(np.rint(np.linspace(0, rows, num=row_divs+1)))
-    #print('img_blocks xs: ', xs)
-    #print('img_blocks ys: ', ys)
+    #Printer.normal(2,1,'img_blocks xs: ', xs)
+    #Printer.normal(2,1,'img_blocks ys: ', ys)
     ystarts, yends = ys[:-1], ys[1:]
     xstarts, xends = xs[:-1], xs[1:]
     for y1, y2 in zip(ystarts, yends):
@@ -65,11 +65,11 @@ def mask_block(mask,x1,x2,y1,y2):
 # create a generator over an image to extract 'row_divs' x 'col_divs' sub-blocks 
 def img_mask_blocks(img, mask, row_divs, col_divs):
     rows, cols = img.shape[:2]
-    #print('img.shape: ', img.shape)
+    #Printer.normal(2,1,'img.shape: ', img.shape)
     xs = np.uint32(np.rint(np.linspace(0, cols, num=col_divs+1)))   # num = Number of samples to generate
     ys = np.uint32(np.rint(np.linspace(0, rows, num=row_divs+1)))
-    #print('img_blocks xs: ', xs)
-    #print('img_blocks ys: ', ys)
+    #Printer.normal(2,1,'img_blocks xs: ', xs)
+    #Printer.normal(2,1,'img_blocks ys: ', ys)
     ystarts, yends = ys[:-1], ys[1:]
     xstarts, xends = xs[:-1], xs[1:]
     for y1, y2 in zip(ystarts, yends):
@@ -90,7 +90,7 @@ def pyramid(image, scale=1.2, minSize=(30, 30), gauss_filter=True, sigma0=1.0):
     sigma_prev = sigma_nominal      
     
     sigma_total = math.pow(scale,level) * sigma0
-    print('level %d, sigma_total: %f' %(level,sigma_total))
+    Printer.normal(2,1,'level %d, sigma_total: %f' %(level,sigma_total))
     sigma_cur = math.sqrt(sigma_total*sigma_total - sigma_prev*sigma_prev)    
     sigma_prev = sigma_cur     
     
@@ -104,7 +104,7 @@ def pyramid(image, scale=1.2, minSize=(30, 30), gauss_filter=True, sigma0=1.0):
         level += 1
         
         sigma_total = math.pow(scale,level) * sigma0
-        print('level %d, sigma_total: %f' %(level,sigma_total))
+        Printer.normal(2,1,'level %d, sigma_total: %f' %(level,sigma_total))
         sigma_cur = math.sqrt(sigma_total*sigma_total - sigma_prev*sigma_prev)
         sigma_prev = sigma_cur 
                             
@@ -138,7 +138,7 @@ def rotate_img(img, center=None, angle=0, scale=1):
     if center is None: 
         center = (w / 2, h / 2)   
     img_box = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ])     
-    #print('img_box:',img_box)          
+    #Printer.normal(2,1,'img_box:',img_box)          
     M = cv2.getRotationMatrix2D(center, angle, scale)
     # grab sin and cos from matrix 
     cos = np.abs(M[0, 0])
@@ -150,7 +150,7 @@ def rotate_img(img, center=None, angle=0, scale=1):
     M[0, 2] += (new_w / 2) - center[0]
     M[1, 2] += (new_h / 2) - center[1]    
     rotated_img_box = (M @ add_ones(img_box).T).T   
-    #print('rotated_img_box:',rotated_img_box)          
+    #Printer.normal(2,1,'rotated_img_box:',rotated_img_box)          
     img_out = cv2.warpAffine(img, M, (new_w, new_h))
     return img_out, rotated_img_box, M 
 
@@ -173,13 +173,13 @@ def transform_img(img,rotx,roty,rotz,tx=0,ty=0,scale=1,adjust_frame=True):
     (h, w) = img.shape[:2]
     center =  np.float32([w / 2, h / 2, 1])       
     img_box = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ])       
-    #print('img_box:',img_box)       
+    #Printer.normal(2,1,'img_box:',img_box)       
     H = homography_matrix(img,roll,pitch,yaw,tx,ty,tz)
-    #print('H:',H)
+    #Printer.normal(2,1,'H:',H)
     transformed_img_box = (H @ add_ones(img_box).T) 
     transformed_img_box = (transformed_img_box[:2]/transformed_img_box[2]).T   
     transformed_center = (H @ center.T).T
-    #print('transformed_img_box:',transformed_img_box)     
+    #Printer.normal(2,1,'transformed_img_box:',transformed_img_box)     
     if adjust_frame:   
         # adjust the frame in order to contain the transformed image 
         min_u = math.floor(transformed_img_box[:,0].min())
@@ -213,13 +213,13 @@ def add_background(img, img_box, img_background=None):
     else:
         # check if we have to resize img_background
         if img_background.shape != img.shape: 
-            #print('resizing img background')
+            #Printer.normal(2,1,'resizing img background')
             (h, w) = img.shape[:2]
             img_background = cv2.resize(img_background,(w,h))
             # check if we have to convert to gray image            
             if img.ndim == 2:   
                 img_background = cv2.cvtColor(img_background,cv2.COLOR_RGB2GRAY) 
-        #print('img.shape:',img.shape,', img_background.shape:',img_background.shape)            
+        #Printer.normal(2,1,'img.shape:',img.shape,', img_background.shape:',img_background.shape)            
     mask = mask_from_polygon(img.shape,img_box) 
     inverse_mask = cv2.bitwise_not(mask)
     img_background = cv2.bitwise_or(img_background, img_background, mask=inverse_mask)

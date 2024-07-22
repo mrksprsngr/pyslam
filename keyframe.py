@@ -65,7 +65,7 @@ class KeyFrameGraph(object):
         with self._lock_connections:
             if self == keyframe: 
                 if __debug__:
-                    Printer.orange('KeyFrameGraph.set_parent - trying to set self as parent')
+                    Printer.orange(1,'all','KeyFrameGraph.set_parent - trying to set self as parent')
                 return 
             self.parent = keyframe 
             keyframe.add_child(self)
@@ -177,7 +177,7 @@ class KeyFrame(Frame,KeyFrameGraph):
         if hasattr(frame, '_kd'):     
             self._kd = frame._kd 
         else: 
-            Printer.orange('KeyFrame %d computing kdtree for input frame %d'%(self.id,frame.id))
+            Printer.orange(1,'all','KeyFrame %d computing kdtree for input frame %d'%(self.id,frame.id))
             self._kd = cKDTree(self.kpsu)
     
         # map points information arrays (copy points coming from frame)
@@ -203,7 +203,7 @@ class KeyFrame(Frame,KeyFrameGraph):
             return 
         # order the keyframes 
         covisible_keyframes = viewing_keyframes.most_common() 
-        #print('covisible_keyframes: ', covisible_keyframes)
+        #Printer.normal(2,0,'covisible_keyframes: ', covisible_keyframes)
         # get keyframe that shares most points 
         kf_max, w_max = covisible_keyframes[0]
         # if the counter is greater than threshold add connection
@@ -226,7 +226,7 @@ class KeyFrame(Frame,KeyFrameGraph):
             if self.is_first_connection and self.kid!=0: 
                 self.set_parent(kf_max)
                 self.is_first_connection = False 
-        #print('ordered_keyframes_weights: ', self.ordered_keyframes_weights)                               
+        #Printer.normal(2,0,'ordered_keyframes_weights: ', self.ordered_keyframes_weights)                               
             
     @property             
     def is_bad(self): 

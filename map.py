@@ -41,14 +41,9 @@ import g2o
 import optimizer_g2o 
 
 
-kVerbose = True 
 kMaxLenFrameDeque = 20
 
 
-if not kVerbose:
-    def print(*args, **kwargs):
-        pass 
-         
         
 class Map(object):
     def __init__(self):
@@ -258,7 +253,7 @@ class Map(object):
             
             for i, p in enumerate(points3d):
                 if not mask_pts3d[i]:
-                    #print('p[%d] not good' % i)
+                    #Printer.normal(2,0,'p[%d] not good' % i)
                     continue
                     
                 idx1_i = idxs1[i]
@@ -274,7 +269,7 @@ class Map(object):
                     # ray2 = np.dot(kf2.Rwc, add_ones_1D(kf2.kpsn[idx2_i]))
                     # cos_parallax = ray1.dot(ray2) / (np.linalg.norm(ray1) * np.linalg.norm(ray2))
                     # if cos_parallax < 0 or cos_parallax > cos_max_parallax:
-                    #     #print('p[',i,']: ',p,' not enough parallax: ', cos_parallaxs[i]) 
+                    #     #Printer.normal(2,0,'p[',i,']: ',p,' not enough parallax: ', cos_parallaxs[i]) 
                     #     continue
 
                     # check points are visible on f1
@@ -330,11 +325,11 @@ class Map(object):
                     # average color in a (1+2*delta) x (1+2*delta) patch 
                     img_range = img_range_elem(img_ranges,i) 
                     color_patch = img1[img_range[1][:,np.newaxis],img_range[0]]         
-                    #print('color_patch.shape:',color_patch.shape)    
+                    #Printer.normal(2,0,'color_patch.shape:',color_patch.shape)    
                                                                                   
                     color = cv2.mean(color_patch)[:3]  # compute the mean color in the patch                                                                                      
                 except IndexError:
-                    Printer.orange('color out of range')
+                    Printer.orange(1,'all','color out of range')
                     color = (255, 0, 0)
                     
                 # add the point to this map                 
@@ -352,8 +347,8 @@ class Map(object):
     def remove_points_with_big_reproj_err(self, points): 
         with self._lock:             
             with self.update_lock: 
-                #print('map points: ', sorted([p.id for p in self.points]))
-                #print('points: ', sorted([p.id for p in points]))           
+                #Printer.normal(2,0,'map points: ', sorted([p.id for p in self.points]))
+                #Printer.normal(2,0,'points: ', sorted([p.id for p in points]))           
                 culled_pt_count = 0
                 for p in points:
                     # compute reprojection error
@@ -368,9 +363,9 @@ class Map(object):
                     mean_chi2 = np.mean(chi2s)
                     if np.mean(chi2s) > Parameters.kChi2Mono:  # chi-square 2 DOFs  (Hartley Zisserman pg 119)
                         culled_pt_count += 1
-                        #print('removing point: ',p.id, 'from frames: ', [f.id for f in p.keyframes])
+                        #Printer.normal(2,0,'removing point: ',p.id, 'from frames: ', [f.id for f in p.keyframes])
                         self.remove_point(p)
-                Printer.blue("# culled map points: ", culled_pt_count)        
+                Printer.blue(1,'all',"# culled map points: ", culled_pt_count)        
 
 
     # BA considering all keyframes: 
@@ -387,13 +382,13 @@ class Map(object):
     # local BA: only local keyframes and local points are adjusted
     def locally_optimize(self, kf_ref, verbose = False, rounds=10, abort_flag=g2o.Flag()):    
         keyframes, points, ref_keyframes = self.local_map.update(kf_ref)
-        print('local optimization window: ', sorted([kf.id for kf in keyframes]))        
-        print('                     refs: ', sorted([kf.id for kf in ref_keyframes]))
-        print('                   #points: ', len(points))               
-        #print('                   points: ', sorted([p.id for p in points]))        
+        Printer.normal(2,0,'local optimization window: ', sorted([kf.id for kf in keyframes]))        
+        Printer.normal(2,0,'                     refs: ', sorted([kf.id for kf in ref_keyframes]))
+        Printer.normal(2,0,'                   #points: ', len(points))               
+        #Printer.normal(2,0,'                   points: ', sorted([p.id for p in points]))        
         #err = optimizer_g2o.optimize(frames, points, None, False, verbose, rounds)  
         err, ratio_bad_observations = optimizer_g2o.local_bundle_adjustment(keyframes, points, ref_keyframes, False, verbose, rounds, abort_flag=abort_flag, map_lock=self.update_lock)
-        Printer.green('local optimization - perc bad observations: %.2f %%' % (ratio_bad_observations*100) )              
+        Printer.green(1,'all','local optimization - perc bad observations: %.2f %%' % (ratio_bad_observations*100) )              
         return err 
 
 
@@ -517,7 +512,7 @@ class LocalMapBase(object):
         #keyframes = self.get_local_keyframes()
         #assert len(points) > 0
         if len(points) == 0:
-            Printer.red('get_frame_covisibles - frame with not points')
+            Printer.red(1,'all','get_frame_covisibles - frame with not points')
         
         # for all map points in frame check in which other keyframes are they seen
         # increase counter for those keyframes            

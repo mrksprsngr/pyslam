@@ -26,6 +26,7 @@ import pypangolin as pangolin
 import OpenGL.GL as gl
 import numpy as np
 from utils_geom import inv_T 
+from utils_sys import Printer
 
 
 kUiWidth = 180
@@ -76,7 +77,7 @@ class Viewer3D(object):
         self._is_running.value = 0
         self.vp.join()
         #pangolin.Quit()
-        print('Viewer stopped')   
+        Printer.normal(1,5,'Viewer 3D stopped.')   
         
     def is_paused(self):
         return (self._is_paused.value == 1)       
@@ -85,7 +86,7 @@ class Viewer3D(object):
         self.viewer_init(kViewportWidth, kViewportHeight)
         while not pangolin.ShouldQuit() and (is_running.value == 1):
             self.viewer_refresh(qmap, qvo, is_paused)
-        print('Quitting viewer...')    
+        Printer.normal(1,5,'Quitting Viewer 3D ...')    
 
     def viewer_init(self, w, h):
         # pangolin.ParseVarsFile('app.cfg')

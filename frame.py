@@ -50,8 +50,10 @@ class FrameBase(object):
         # frame camera info
         self.camera = camera
         # self._pose is a CameraPose() representing Tcw (pc = Tcw * pw)
+        # pc: point in camera frame, pw: point in world frame
+        # Tcw: transformation matrix from world to camera frame
         if pose is None: 
-            self._pose = CameraPose()      
+            self._pose = CameraPose()   # identity pose   
         else: 
             self._pose = CameraPose(pose) 
         # frame id            
@@ -97,6 +99,10 @@ class FrameBase(object):
     def Twc(self):
         with self._lock_pose:           
             return self._pose.get_inverse_matrix()      
+    @property
+    def Twc_as_g2oIsometry3d(self):    
+        with self._lock_pose:           
+            return self._pose.get_inverse()  
     @property
     def Rcw(self):
         with self._lock_pose:           
@@ -279,7 +285,7 @@ class Frame(FrameBase):
                 # convert from a list of keypoints to arrays of points, octaves, sizes  
                 kps_data = np.array([ [x.pt[0], x.pt[1], x.octave, x.size, x.angle] for x in self.kps ], dtype=np.float32)                            
                 self.kps     = kps_data[:,:2]    
-                self.octaves = np.uint32(kps_data[:,2]) #print('octaves: ', self.octaves)                      
+                self.octaves = np.uint32(kps_data[:,2]) #Printer.normal(2,0,'octaves: ', self.octaves)                      
                 self.sizes   = kps_data[:,3]
                 self.angles  = kps_data[:,4]       
             else:
@@ -443,7 +449,7 @@ class Frame(FrameBase):
                         self.points[i] = None 
                         self.outliers[i] = False                          
                         num_cleaned_points += 1
-            print('#cleaned vo points: ', num_cleaned_points)
+            Printer.normal(2,0,'#cleaned vo points: ', num_cleaned_points)
                     
     # check for point replacements 
     def check_replaced_map_points(self):
@@ -457,7 +463,7 @@ class Frame(FrameBase):
                         self.points[i] = replacement   
                         del replaced        
                         num_replaced_points +=1
-            print('#replaced points: ', num_replaced_points)            
+            Printer.normal(2,0,'#replaced points: ', num_replaced_points)            
                                                            
     def compute_points_median_depth(self, points3d = None):
         with self._lock_pose:        
@@ -471,7 +477,7 @@ class Frame(FrameBase):
             z = sorted(z) 
             return z[ ( len(z)-1)//2 ]                
         else:
-            Printer.red('frame.compute_points_median_depth() with no points')
+            Printer.red(1,'all','frame.compute_points_median_depth() with no points')
             return -1 
         
     # draw tracked features on the image for selected keypoint indexes 

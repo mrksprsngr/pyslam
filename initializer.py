@@ -104,13 +104,13 @@ class Initializer(object):
         if self.num_failures > kNumOfFailuresAfterWichNumMinTriangulatedPointsIsHalved: 
             self.num_min_triangulated_points = 0.5 * Parameters.kInitializerNumMinTriangulatedPoints
             self.num_failures = 0
-            Printer.orange('Initializer: halved min num triangulated features to ', self.num_min_triangulated_points)            
+            Printer.orange(1,'all','Initializer: halved min num triangulated features to ', self.num_min_triangulated_points)            
 
         # prepare the output 
         out = InitializerOutput()
         is_ok = False 
 
-        #print('num frames: ', len(self.frames))
+        #Printer.normal(2,0,'num frames: ', len(self.frames))
         
         # if too many frames have passed, move the current idx_f_ref forward 
         # this is just one very simple policy that can be used 
@@ -119,27 +119,27 @@ class Initializer(object):
                 self.f_ref = self.frames[-1]  # take last frame in the buffer
                 #self.idx_f_ref = len(self.frames)-1  # take last frame in the buffer
                 #self.idx_f_ref = self.frames.index(self.f_ref)  # since we are using a deque, the code of the previous commented line is not valid anymore 
-                #print('*** idx_f_ref:',self.idx_f_ref)
+                #Printer.normal(2,0,'*** idx_f_ref:',self.idx_f_ref)
         #self.f_ref = self.frames[self.idx_f_ref] 
         f_ref = self.f_ref 
-        #print('ref fid: ',self.f_ref.id,', curr fid: ', f_cur.id, ', idxs_ref: ', self.idxs_ref)
+        #Printer.normal(2,0,'ref fid: ',self.f_ref.id,', curr fid: ', f_cur.id, ', idxs_ref: ', self.idxs_ref)
                 
         # append current frame 
         self.frames.append(f_cur)
 
         # if the current frames do no have enough features exit 
         if len(f_ref.kps) < self.num_min_features or len(f_cur.kps) < self.num_min_features:
-            Printer.red('Inializer: ko - not enough features!') 
+            Printer.red(1,'all','Inializer: ko - not enough features!') 
             self.num_failures += 1
             return out, is_ok
 
         # find keypoint matches
         idxs_cur, idxs_ref = match_frames(f_cur, f_ref, kFeatureMatchRatioTestInitializer)       
     
-        print('|------------')        
-        #print('deque ids: ', [f.id for f in self.frames])
-        print('initializing frames ', f_cur.id, ', ', f_ref.id)
-        print("# keypoint matches: ", len(idxs_cur))  
+        Printer.normal(2,0,'|------------')        
+        #Printer.normal(2,0,'deque ids: ', [f.id for f in self.frames])
+        Printer.normal(2,0,'initializing frames ', f_cur.id, ', ', f_ref.id)
+        Printer.normal(2,0,"# keypoint matches: ", len(idxs_cur))  
                 
         Trc = self.estimatePose(f_ref.kpsn[idxs_ref], f_cur.kpsn[idxs_cur])
         Tcr = inv_T(Trc)  # Tcr w.r.t. ref frame 
@@ -149,7 +149,7 @@ class Initializer(object):
         # remove outliers from keypoint matches by using the mask computed with inter frame pose estimation        
         mask_idxs = (self.mask_match.ravel() == 1)
         self.num_inliers = sum(mask_idxs)
-        print('# keypoint inliers: ', self.num_inliers )
+        Printer.normal(2,0,'# keypoint inliers: ', self.num_inliers )
         idx_cur_inliers = idxs_cur[mask_idxs]
         idx_ref_inliers = idxs_ref[mask_idxs]
 
@@ -169,14 +169,14 @@ class Initializer(object):
         pts3d, mask_pts3d = triangulate_normalized_points(kf_cur.Tcw, kf_ref.Tcw, kf_cur.kpsn[idx_cur_inliers], kf_ref.kpsn[idx_ref_inliers])
 
         new_pts_count, mask_points, _ = map.add_points(pts3d, mask_pts3d, kf_cur, kf_ref, idx_cur_inliers, idx_ref_inliers, img_cur, do_check=True, cos_max_parallax=Parameters.kCosMaxParallaxInitializer)
-        print("# triangulated points: ", new_pts_count)   
+        Printer.normal(2,0,"# triangulated points: ", new_pts_count)   
                         
         if new_pts_count > self.num_min_triangulated_points:  
             err = map.optimize(verbose=False, rounds=20,use_robust_kernel=True)
-            print("init optimization error^2: %f" % err)         
+            Printer.normal(2,0,"init optimization error^2: %f" % err)         
 
             num_map_points = len(map.points)
-            print("# map points:   %d" % num_map_points)   
+            Printer.normal(2,0,"# map points:   %d" % num_map_points)   
             is_ok = num_map_points > self.num_min_triangulated_points
 
             out.pts = pts3d[mask_points]
@@ -189,7 +189,7 @@ class Initializer(object):
             desired_median_depth = Parameters.kInitializerDesiredMedianDepth
             median_depth = kf_cur.compute_points_median_depth(out.pts)        
             depth_scale = desired_median_depth/median_depth 
-            print('forcing current median depth ', median_depth,' to ',desired_median_depth)
+            Printer.normal(2,0,'forcing current median depth ', median_depth,' to ',desired_median_depth)
 
             out.pts[:,:3] = out.pts[:,:3] * depth_scale  # scale points 
             tcw = kf_cur.tcw * depth_scale  # scale initial baseline 
@@ -198,9 +198,9 @@ class Initializer(object):
         map.delete()
   
         if is_ok:
-            Printer.green('Inializer: ok!')    
+            Printer.green(1,'all','Inializer: ok!')    
         else:
             self.num_failures += 1            
-            Printer.red('Inializer: ko!')                         
-        print('|------------')               
+            Printer.red(1,'all','Inializer: ko!')                         
+        Printer.normal(2,0,'|------------')               
         return out, is_ok

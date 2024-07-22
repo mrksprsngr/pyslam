@@ -168,35 +168,35 @@ def weights_init(m):
 # interface for pySLAM
 class LogpolarFeature2D: 
     def __init__(self, use_log_polar=True, do_cuda=True):    
-        print('Using LogpolarFeature2D')         
+        Printer.normal(2,0,'Using LogpolarFeature2D')         
         self.model_base_path = config.cfg.root_folder + '/thirdparty/logpolar/'        
         
         if use_log_polar:
             config_path = os.path.join(self.model_base_path, 'configs', 'init_one_example_ptn_96.yml')
             if kVerbose:
-                print('-- Using log-polar model')
+                Printer.normal(2,0,'-- Using log-polar model')
         else:
             config_path = os.path.join(self.model_base_path, 'configs', 'init_one_example_stn_16.yml')
             if kVerbose:
-                print('-- Using cartesian model')
+                Printer.normal(2,0,'-- Using cartesian model')
         cfg.merge_from_file(config_path)
 
         self.model_weights_path = self.model_base_path + cfg.TEST.MODEL_WEIGHTS  # N.B.: this must stay here, after cfg.merge_from_file()
         if kVerbose2:        
-            print('model_weights_path:',self.model_weights_path)
+            Printer.normal(2,0,'model_weights_path:',self.model_weights_path)
                     
         os.environ["CUDA_VISIBLE_DEVICES"] = str(0)
         torch.cuda.manual_seed_all(cfg.TRAINING.SEED)
         torch.backends.cudnn.deterministic = True
     
         self.do_cuda = do_cuda & torch.cuda.is_available()
-        print('cuda:',self.do_cuda)     
+        Printer.normal(2,0,'cuda:',self.do_cuda)     
         device = torch.device("cuda:0" if self.do_cuda else "cpu")        
         self.device = device 
                 
         torch.set_grad_enabled(False)   
         
-        print('==> Loading pre-trained network.')        
+        Printer.normal(2,0,'==> Loading pre-trained network.')        
         self.model = HardNet(transform=cfg.TEST.TRANSFORMER,
                     coords=cfg.TEST.COORDS,
                     patch_size=cfg.TEST.IMAGE_SIZE,
@@ -208,12 +208,12 @@ class LogpolarFeature2D:
         self.model.load_state_dict(self.checkpoint['state_dict'])
         if self.do_cuda:
             self.model.cuda()
-            print('Extracting on GPU')
+            Printer.normal(2,0,'Extracting on GPU')
         else:
-            print('Extracting on CPU')
+            Printer.normal(2,0,'Extracting on CPU')
             self.model = model.cpu()        
         self.model.eval()            
-        print('==> Successfully loaded pre-trained network.')            
+        Printer.normal(2,0,'==> Successfully loaded pre-trained network.')            
                   
                    
     def compute_des(self, img, kps):
@@ -255,7 +255,7 @@ class LogpolarFeature2D:
         ]
 
         if kVerbose2:
-            print('-- Padded image from {}x{} to {}x{} in {} s'.format(
+            Printer.normal(2,0,'-- Padded image from {}x{} to {}x{} in {} s'.format(
                 h, w, img.shape[0], img.shape[1], time()-t))
             
         # Extract descriptors
@@ -266,7 +266,7 @@ class LogpolarFeature2D:
 
         descriptors, patches = self.model({'img': imgs}, img_keypoints, ['img'] * len(img_keypoints[0]))      
         if kVerbose2:
-            print('-- Computed {} descriptors in {:0.2f} sec.'.format(
+            Printer.normal(2,0,'-- Computed {} descriptors in {:0.2f} sec.'.format(
                 descriptors.shape[0],
                 time() - t))         
         return descriptors.cpu().detach().numpy()            
@@ -278,7 +278,7 @@ class LogpolarFeature2D:
         if num_kps>0:
             des = self.compute_des(img, kps)
         if kVerbose:
-            print('descriptor: LOGPOLAR, #features: ', len(kps), ', frame res: ', img.shape[0:2])                  
+            Printer.normal(2,0,'descriptor: LOGPOLAR, #features: ', len(kps), ', frame res: ', img.shape[0:2])                  
         return kps, des
     
 

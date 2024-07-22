@@ -111,11 +111,11 @@ class LocalMapping(object):
         self.work_thread.start()
 
     def quit(self):
-        print('local mapping: quitting...')
+        Printer.normal(2,0,'local mapping: quitting...')
         self.stop = True
         self.opt_abort_flag.value = True        
         self.work_thread.join()
-        print('local mapping: done')   
+        Printer.normal(2,0,'local mapping: done')   
         
     def push_keyframe(self, keyframe):
         self.queue.put(keyframe)       
@@ -137,7 +137,7 @@ class LocalMapping(object):
             self.idle_codition.wait()   
         
     def interrupt_optimization(self):
-        Printer.yellow('interrupting local mapping optimization')        
+        Printer.yellow(3,'map','interrupting local mapping optimization')        
         self.opt_abort_flag.value = True
         
         
@@ -148,7 +148,9 @@ class LocalMapping(object):
                 self.set_idle(False) 
                 
                 self.do_local_mapping()
-                    
+                Printer.green(3,'map','local mapping: done')
+                list_keyframes_ids = [kf.id for kf in self.map.keyframes]
+                Printer.green(3,'map',"self.map.keyframes: ", list_keyframes_ids)
                 self.set_idle(True)
                 self.idle_codition.notifyAll()
                              
@@ -162,16 +164,16 @@ class LocalMapping(object):
         if self.map.local_map.is_empty():
             return 
             
-        Printer.cyan('@local mapping')
+        Printer.cyan(1,'all','@local mapping')
         time_start = time.time()
                 
         self.kf_cur = self.queue.get()   
                 
         if kLocalMappingOnSeparateThread: 
-            print('..................................')
-            print('processing KF: ', self.kf_cur.id, ', queue size: ', self.queue_size())   
+            Printer.normal(2,0,'..................................')
+            Printer.normal(2,0,'processing KF: ', self.kf_cur.id, ', queue size: ', self.queue_size())   
         
-        #print('descriptor_distance_sigma: ', self.descriptor_distance_sigma)
+        #Printer.normal(2,0,'descriptor_distance_sigma: ', self.descriptor_distance_sigma)
                         
         self.process_new_keyframe()          
                 
@@ -179,20 +181,20 @@ class LocalMapping(object):
         self.timer_pts_culling.start()        
         num_culled_points = self.cull_map_points()
         self.timer_pts_culling.refresh()    
-        print(' # culled points: ', num_culled_points)                 
+        Printer.normal(2,0,' # culled points: ', num_culled_points)                 
                 
         # create new points by triangulation 
         self.timer_triangulation.start()
         total_new_pts = self.create_new_map_points()
         self.timer_triangulation.refresh()
-        print(" # new map points: %d " % (total_new_pts))   
+        Printer.normal(2,0," # new map points: %d " % (total_new_pts))   
         
         if self.queue.empty():
             # fuse map points of close keyframes
             self.timer_pts_fusion.start()
             total_fused_pts = self.fuse_map_points()
             self.timer_pts_fusion.refresh()
-            print(" # fused map points: %d " % (total_fused_pts)) 
+            Printer.normal(2,0," # fused map points: %d " % (total_fused_pts)) 
 
         # reset optimization flag 
         self.opt_abort_flag.value = False                
@@ -215,10 +217,10 @@ class LocalMapping(object):
                 
             # check redundant local Keyframes
             num_culled_keyframes = self.cull_keyframes() 
-            print(" # culled keyframes: %d " % (num_culled_keyframes))                       
+            Printer.orange(1,'all'," # culled keyframes: %d " % (num_culled_keyframes))                       
             
         duration = time.time() - time_start
-        print('local mapping duration: ', duration)
+        Printer.normal(2,0,'local mapping duration: ', duration)
          
          
     def local_BA(self):
@@ -226,19 +228,19 @@ class LocalMapping(object):
         self.time_local_opt.start()   
         err = self.map.locally_optimize(kf_ref=self.kf_cur, abort_flag=self.opt_abort_flag)
         self.time_local_opt.refresh()
-        print("local optimization error^2:   %f" % err)       
+        Printer.normal(2,0,"local optimization error^2:   %f" % err)       
         num_kf_ref_tracked_points = self.kf_cur.num_tracked_points(kNumMinObsForKeyFrameDefault) # number of tracked points in k_ref
-        Printer.purple('KF(%d) #points: %d ' %(self.kf_cur.id, num_kf_ref_tracked_points))           
+        Printer.purple(1,'all','KF(%d) #points: %d ' %(self.kf_cur.id, num_kf_ref_tracked_points))           
               
           
     def large_window_BA(self):
-        Printer.blue('@large BA')
+        Printer.blue(1,'all','@large BA')
         # large window optimization of the map
         self.kid_last_BA = self.kf_cur.kid   
         self.time_large_opt.start() 
         err = self.map.optimize(local_window=Parameters.kLargeBAWindow, abort_flag=self.opt_abort_flag)  # verbose=True)
         self.time_large_opt.refresh()
-        Printer.blue('large window optimization error^2: %f, KF id: %d' % (err,self.kf_cur.kid))                                                                 
+        Printer.blue(1,'all','large window optimization error^2: %f, KF id: %d' % (err,self.kf_cur.kid))                                                                 
         
         
     def process_new_keyframe(self):
@@ -256,7 +258,7 @@ class LocalMapping(object):
                         
         
     def cull_map_points(self):
-        print('>>>> culling map points...')  
+        Printer.normal(2,0,'>>>> culling map points...')  
         th_num_observations = 2      
         min_found_ratio = 0.25  
         current_kid = self.kf_cur.kid 
@@ -278,7 +280,7 @@ class LocalMapping(object):
            
            
     def cull_keyframes(self): 
-        print('>>>> culling keyframes...')    
+        Printer.normal(2,0,'>>>> culling keyframes...')    
         num_culled_keyframes = 0
         # check redundant keyframes in local keyframes: a keyframe is considered redundant if the 90% of the MapPoints it sees, 
         # are seen in at least other 3 keyframes (in the same or finer scale)
@@ -309,7 +311,7 @@ class LocalMapping(object):
             if (kf_num_redundant_observations > Parameters.kKeyframeCullingRedundantObsRatio * kf_num_points) and \
                (kf_num_points > Parameters.kKeyframeCullingMinNumPoints) and \
                (kf.timestamp - kf.parent.timestamp < Parameters.kKeyframeMaxTimeDistanceInSecForCulling):
-                print('setting keyframe ', kf.id,' bad - redundant observations: ', kf_num_redundant_observations/max(kf_num_points,1),'%')
+                Printer.normal(2,0,'setting keyframe ', kf.id,' bad - redundant observations: ', kf_num_redundant_observations/max(kf_num_points,1),'%')
                 kf.set_bad()
                 num_culled_keyframes += 1
         return num_culled_keyframes
@@ -341,11 +343,11 @@ class LocalMapping(object):
             
     # triangulate matched keypoints (without a corresponding map point) amongst recent keyframes      
     def create_new_map_points(self):
-        print('>>>> creating new map points')
+        Printer.normal(2,0,'>>>> creating new map points')
         total_new_pts = 0
         
         local_keyframes = self.map.local_map.get_best_neighbors(self.kf_cur)
-        print('local map keyframes: ', [kf.id for kf in local_keyframes if not kf.is_bad], ' + ', self.kf_cur.id, '...')            
+        Printer.normal(2,0,'local map keyframes: ', [kf.id for kf in local_keyframes if not kf.is_bad], ' + ', self.kf_cur.id, '...')            
         
         match_idxs = defaultdict(lambda: (None,None))   # dictionary of matches  (kf_i, kf_j) -> (idxs_i,idxs_j)         
         # precompute keypoint matches 
@@ -355,9 +357,9 @@ class LocalMapping(object):
             if kf is self.kf_cur or kf.is_bad:
                 continue 
             if i>0 and not self.queue.empty():
-                print('creating new map points *** interruption ***')
+                Printer.normal(2,0,'creating new map points *** interruption ***')
                 return total_new_pts
-            #print("adding map points for KFs (%d, %d)" % (self.kf_cur.id, kf.id))  
+            #Printer.normal(2,0,"adding map points for KFs (%d, %d)" % (self.kf_cur.id, kf.id))  
             
             # extract matches from precomputed map  
             idxs_kf_cur, idxs_kf = match_idxs[(self.kf_cur,kf)]
@@ -372,7 +374,7 @@ class LocalMapping(object):
                 pts3d, mask_pts3d = triangulate_normalized_points(self.kf_cur.pose, kf.pose, self.kf_cur.kpsn[idxs_cur], kf.kpsn[idxs])
                     
                 new_pts_count,_,list_added_points = self.map.add_points(pts3d, mask_pts3d, self.kf_cur, kf, idxs_cur, idxs, self.kf_cur.img, do_check=True)
-                print("# added map points: %d for KFs (%d, %d)" % (new_pts_count, self.kf_cur.id, kf.id))        
+                Printer.normal(2,0,"# added map points: %d for KFs (%d, %d)" % (new_pts_count, self.kf_cur.id, kf.id))        
                 total_new_pts += new_pts_count 
                 self.recently_added_points.update(list_added_points)       
         return total_new_pts                
@@ -380,11 +382,11 @@ class LocalMapping(object):
         
     # fuse close map points of local keyframes 
     def fuse_map_points(self):
-        print('>>>> fusing map points')
+        Printer.normal(2,0,'>>>> fusing map points')
         total_fused_pts = 0
         
         local_keyframes = self.map.local_map.get_best_neighbors(self.kf_cur)
-        print('local map keyframes: ', [kf.id for kf in local_keyframes if not kf.is_bad], ' + ', self.kf_cur.id, '...')   
+        Printer.normal(2,0,'local map keyframes: ', [kf.id for kf in local_keyframes if not kf.is_bad], ' + ', self.kf_cur.id, '...')   
                 
         # search matches by projection from current KF in close KFs        
         for kf in local_keyframes:
@@ -393,7 +395,7 @@ class LocalMapping(object):
             num_fused_pts = search_and_fuse(self.kf_cur.get_points(), kf,
                                             max_reproj_distance=Parameters.kMaxReprojectionDistanceFuse,
                                             max_descriptor_distance=0.5*self.descriptor_distance_sigma) # finer search
-            print("# fused map points: %d for KFs (%d, %d)" % (num_fused_pts, self.kf_cur.id, kf.id))  
+            Printer.normal(2,0,"# fused map points: %d for KFs (%d, %d)" % (num_fused_pts, self.kf_cur.id, kf.id))  
             total_fused_pts += num_fused_pts    
                
         # search matches by projection from local points in current KF  
@@ -402,7 +404,7 @@ class LocalMapping(object):
         num_fused_pts = search_and_fuse(good_local_points, self.kf_cur,
                                         max_reproj_distance=Parameters.kMaxReprojectionDistanceFuse,
                                         max_descriptor_distance=0.5*self.descriptor_distance_sigma) # finer search
-        print("# fused map points: %d for local map into KF %d" % (num_fused_pts, self.kf_cur.id))  
+        Printer.normal(2,0,"# fused map points: %d for local map into KF %d" % (num_fused_pts, self.kf_cur.id))  
         total_fused_pts += num_fused_pts   
             
         # update points info 

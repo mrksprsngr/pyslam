@@ -71,20 +71,20 @@ class BlockAdaptor(object):
             return self.detector.detect(frame, mask)
         else:   
             if kVerbose:             
-                print('BlockAdaptor ', self.row_divs, 'x', self.col_divs)
+                Printer.normal(2,0,'BlockAdaptor ', self.row_divs, 'x', self.col_divs)
             block_generator = img_mask_blocks(frame, mask, self.row_divs, self.col_divs)
             kps_all = []  # list are thread-safe   
             
             def detect_block(b_m_i_j):                         
                 b, m, i, j = b_m_i_j
                 if kVerbose and False:                  
-                    print('BlockAdaptor  in block (',i,',',j,')')                 
+                    Printer.normal(2,0,'BlockAdaptor  in block (',i,',',j,')')                 
                 kps = self.detector.detect(b, mask=m)
-                #print('adaptor: detected #features: ', len(kps), ' in block (',i,',',j,')')  
+                #Printer.normal(2,0,'adaptor: detected #features: ', len(kps), ' in block (',i,',',j,')')  
                 for kp in kps:
-                    #print('kp.pt before: ', kp.pt)
+                    #Printer.normal(2,0,'kp.pt before: ', kp.pt)
                     kp.pt = (kp.pt[0] + j, kp.pt[1] + i)        
-                    #print('kp.pt after: ', kp.pt)                                                                     
+                    #Printer.normal(2,0,'kp.pt after: ', kp.pt)                                                                     
                 kps_all.extend(kps)     
                        
             if not self.do_parallel:
@@ -102,7 +102,7 @@ class BlockAdaptor(object):
             return self.detector.detectAndCompute(frame, mask)
         else:   
             if kVerbose:             
-                print('BlockAdaptor ', self.row_divs, 'x', self.col_divs)
+                Printer.normal(2,0,'BlockAdaptor ', self.row_divs, 'x', self.col_divs)
             block_generator = img_mask_blocks(frame, mask, self.row_divs, self.col_divs)
             kps_all = []
             des_all = []
@@ -111,18 +111,18 @@ class BlockAdaptor(object):
             def detect_and_compute_block(b_m_i_j):                         
                 b, m, i, j = b_m_i_j
                 if kVerbose and False:                  
-                    print('BlockAdaptor  in block (',i,',',j,')')    
+                    Printer.normal(2,0,'BlockAdaptor  in block (',i,',',j,')')    
                 if self.is_detector_equal_to_descriptor:             
                     kps, des = self.detector.detectAndCompute(b, mask=m)
                 else:
                     kps = self.detector.detect(b, mask=m)    
                     kps, des = self.descriptor.compute(b, kps)  
-                    #print('adaptor: detected #features: ', len(kps), ' in block (',i,',',j,')')  
+                    #Printer.normal(2,0,'adaptor: detected #features: ', len(kps), ' in block (',i,',',j,')')  
                 # transform the points 
                 for kp in kps:
-                    #print('kp.pt before: ', kp.pt)
+                    #Printer.normal(2,0,'kp.pt before: ', kp.pt)
                     kp.pt = (kp.pt[0] + j, kp.pt[1] + i)        
-                    #print('kp.pt after: ', kp.pt)                                                                           
+                    #Printer.normal(2,0,'kp.pt after: ', kp.pt)                                                                           
                 kps_des_map[(i,j)] = (kps,des)     
                              
             if not self.do_parallel:
@@ -200,7 +200,7 @@ class PyramidAdaptor(object):
             sum_num_features += self.num_features_per_level[level];
             num_desired_features_per_level *= self.inv_scale_factor
         self.num_features_per_level[self.num_levels-1] = max(self.num_features - sum_num_features, 0)    
-        #print('num_features_per_level:',self.num_features_per_level)
+        #Printer.normal(2,0,'num_features_per_level:',self.num_features_per_level)
         
         if self.first_level==-1:
             self.scale_factors[0]=1.0/self.scale_factor                   
@@ -208,7 +208,7 @@ class PyramidAdaptor(object):
         for i in range(1,num_levels):
             self.scale_factors[i]=self.scale_factors[i-1]*self.scale_factor
             self.inv_scale_factors[i]=1.0/self.scale_factors[i]
-        #print('self.inv_scale_factors: ', self.inv_scale_factors)     
+        #Printer.normal(2,0,'self.inv_scale_factors: ', self.inv_scale_factors)     
                  
                  
     # detect on 'unfiltered' pyramid images ('unfiltered' meanining depends on the selected pyramid type)             
@@ -218,7 +218,7 @@ class PyramidAdaptor(object):
         else:    
             #TODO: manage mask 
             if kVerbose:              
-                print('PyramidAdaptor #levels:', self.num_levels,'(from',self.first_level,'), scale_factor:', self.scale_factor,', sigma0:', self.sigma0,', type:', self.pyramid_type.name)
+                Printer.normal(2,0,'PyramidAdaptor #levels:', self.num_levels,'(from',self.first_level,'), scale_factor:', self.scale_factor,', sigma0:', self.sigma0,', type:', self.pyramid_type.name)
             self.pyramid.compute(frame)
             kps_all = []  # list are thread-safe 
             
@@ -229,26 +229,26 @@ class PyramidAdaptor(object):
                 else:
                     kps = self.block_adaptor.detect(pyr_cur)
                 if kVerbose and False:                
-                    print("PyramidAdaptor - level", i, ", shape: ", pyr_cur.shape)                     
+                    Printer.normal(2,0,"PyramidAdaptor - level", i, ", shape: ", pyr_cur.shape)                     
                 for kp in kps:
-                    #print('kp.pt before: ', kp.pt)
+                    #Printer.normal(2,0,'kp.pt before: ', kp.pt)
                     kp.pt = (kp.pt[0]*scale, kp.pt[1]*scale) 
                     kp.size = kp.size*scale   
                     kp.octave = i      
-                    #print('kp: ', kp.pt, kp.octave)  
+                    #Printer.normal(2,0,'kp: ', kp.pt, kp.octave)  
                 if self.do_sat_features_per_level:     
                     kps, _ = sat_num_features(kps, None, self.num_features_per_level[i])  # experimental                                                                                    
                 kps_all.extend(kps)
                 
             if not self.do_parallel:
-                #print('sequential computations')                   
+                #Printer.normal(2,0,'sequential computations')                   
                 # process the blocks sequentially 
                 for i in range(0,self.num_levels):              
                     scale = self.scale_factors[i]
                     pyr_cur  = self.pyramid.imgs[i]   
                     detect_level(scale,pyr_cur,i)  
             else:          
-                #print('parallel computations')   
+                #Printer.normal(2,0,'parallel computations')   
                 futures = []
                 with ThreadPoolExecutor(max_workers = 4) as executor:
                     for i in range(0,self.num_levels):              
@@ -267,7 +267,7 @@ class PyramidAdaptor(object):
             return self.detector.detectAndCompute(frame, mask)
         else:    
             if kVerbose:              
-                print('PyramidAdaptor [dc] #levels:', self.num_levels,'(from',self.first_level,'), scale_factor:', self.scale_factor,', sigma0:', self.sigma0,', type:', self.pyramid_type.name)
+                Printer.normal(2,0,'PyramidAdaptor [dc] #levels:', self.num_levels,'(from',self.first_level,'), scale_factor:', self.scale_factor,', sigma0:', self.sigma0,', type:', self.pyramid_type.name)
             self.pyramid.compute(frame)
             kps_all = []
             des_all = []            
@@ -281,24 +281,24 @@ class PyramidAdaptor(object):
                         kps, des = self.detector.detectAndCompute(pyr_cur)
                     else:
                         kps = self.detector.detect(pyr_cur)                          
-                        #print('description of filtered')
+                        #Printer.normal(2,0,'description of filtered')
                         kps, des = self.descriptor.compute(pyr_cur_filtered, kps)                                            
                 else:
                     kps, des = self.block_adaptor.detectAndCompute(pyr_cur)
                 if kVerbose and False:                
-                    print("PyramidAdaptor - level", i, ", shape: ", pyr_cur.shape)                     
+                    Printer.normal(2,0,"PyramidAdaptor - level", i, ", shape: ", pyr_cur.shape)                     
                 for kp in kps:
-                    #print('before: kp.pt:', kp.pt,', size:',kp.size,', octave:',kp.octave,', angle:',kp.angle)  
+                    #Printer.normal(2,0,'before: kp.pt:', kp.pt,', size:',kp.size,', octave:',kp.octave,', angle:',kp.angle)  
                     kp.pt = (kp.pt[0]*scale, kp.pt[1]*scale) 
                     kp.size = kp.size*scale   
                     kp.octave = i      
-                    #print('after: kp.pt:', kp.pt,', size:',kp.size,', octave:',kp.octave,', angle:',kp.angle)   
+                    #Printer.normal(2,0,'after: kp.pt:', kp.pt,', size:',kp.size,', octave:',kp.octave,', angle:',kp.angle)   
                 if self.do_sat_features_per_level:                        
                      kps, des = sat_num_features(kps, des, N)  # experimental                  
                 kps_des_map[i] = (kps,des)    
                                                                                       
             if not self.do_parallel:
-                #print('sequential computations')                   
+                #Printer.normal(2,0,'sequential computations')                   
                 # process the blocks sequentially 
                 for i in range(0,self.num_levels):              
                     scale = self.scale_factors[i]
@@ -306,7 +306,7 @@ class PyramidAdaptor(object):
                     pyr_cur_filtered  = self.pyramid.imgs_filtered[i]  
                     detect_and_compute_level(scale, pyr_cur, pyr_cur_filtered, self.num_features_per_level[i], i)
             else:          
-                #print('parallel computations')   
+                #Printer.normal(2,0,'parallel computations')   
                 futures = []
                 with ThreadPoolExecutor(max_workers = 4) as executor:
                     for i in range(0,self.num_levels):              

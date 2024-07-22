@@ -95,21 +95,21 @@ class PinholeCamera(Camera):
                                 [self.u_min, self.v_max],
                                 [self.u_max, self.v_min],
                                 [self.u_max, self.v_max]], dtype=np.float32).reshape(4,2)
-        #print('uv_bounds: ', uv_bounds)
+        #Printer.normal(2,0,'uv_bounds: ', uv_bounds)
         if self.is_distorted:
                 uv_bounds_undistorted = cv2.undistortPoints(np.expand_dims(uv_bounds, axis=1), self.K, self.D, None, self.K)      
                 uv_bounds_undistorted = uv_bounds_undistorted.ravel().reshape(uv_bounds_undistorted.shape[0], 2)
         else:
             uv_bounds_undistorted = uv_bounds 
-        #print('uv_bounds_undistorted: ', uv_bounds_undistorted)                
+        #Printer.normal(2,0,'uv_bounds_undistorted: ', uv_bounds_undistorted)                
         self.u_min = min(uv_bounds_undistorted[0][0],uv_bounds_undistorted[1][0])
         self.u_max = max(uv_bounds_undistorted[2][0],uv_bounds_undistorted[3][0])        
         self.v_min = min(uv_bounds_undistorted[0][1],uv_bounds_undistorted[2][1])    
         self.v_max = max(uv_bounds_undistorted[1][1],uv_bounds_undistorted[3][1])  
-        # print('camera u_min: ', self.u_min)
-        # print('camera u_max: ', self.u_max)
-        # print('camera v_min: ', self.v_min)         
-        # print('camera v_max: ', self.v_max)      
+        # Printer.normal(2,0,'camera u_min: ', self.u_min)
+        # Printer.normal(2,0,'camera u_max: ', self.u_max)
+        # Printer.normal(2,0,'camera v_min: ', self.v_min)         
+        # Printer.normal(2,0,'camera v_max: ', self.v_max)      
      
     def is_in_image(self, uv, z):
         return (uv[0] > self.u_min) & (uv[0] < self.u_max) & \

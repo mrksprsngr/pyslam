@@ -19,13 +19,14 @@
 
 import sys
 if sys.version_info[0] != 3:
-    print("This script requires Python 3")
+    Printer.normal(2,0,"This script requires Python 3")
     exit()
     
 import configparser
 import os
 import yaml
 import numpy as np
+from utils_sys import Printer
 
 
 # N.B.: this file must stay in the root folder of the repository 
@@ -48,7 +49,7 @@ class Config(object):
         self.dataset_settings = None
         self.dataset_type = None
         #self.current_path = os.getcwd()
-        #print('current path: ', self.current_path)
+        #Printer.normal(2,0,'current path: ', self.current_path)
 
         self.config_parser.read(__location__ + '/' + self.config_file)
         self.set_core_lib_paths()
@@ -62,7 +63,7 @@ class Config(object):
         self.core_lib_paths = self.config_parser['CORE_LIB_PATHS']
         for path in self.core_lib_paths:
             ext_path = __location__ + '/' + self.core_lib_paths[path]
-            # print( "importing path: ", ext_path )
+            # Printer.normal(2,0, "importing path: ", ext_path )
             sys.path.append(ext_path)
             
     # read lib paths from config.ini 
@@ -73,16 +74,16 @@ class Config(object):
     def set_lib(self,lib_name,prepend=False):
         if lib_name in self.lib_paths:
             lib_paths = [e.strip() for e in self.lib_paths[lib_name].split(',')]
-            #print('setting lib paths:',lib_paths)
+            #Printer.normal(2,0,'setting lib paths:',lib_paths)
             for lib_path in lib_paths:
                 ext_path = __location__ + '/' + lib_path
-                #print( "importing path: ", ext_path )
+                #Printer.normal(2,0, "importing path: ", ext_path )
                 if not prepend: 
                     sys.path.append(ext_path)      
                 else: 
                     sys.path.insert(0,ext_path)
         else: 
-            print('cannot set lib: ', lib_name)
+            Printer.normal(2,0,'cannot set lib: ', lib_name)
             
     # get dataset settings
     def get_dataset_settings(self):
@@ -91,7 +92,7 @@ class Config(object):
 
         self.dataset_path = self.dataset_settings['base_path'];
         self.dataset_settings['base_path'] = os.path.join( __location__, self.dataset_path)
-        #print('dataset_settings: ', self.dataset_settings)
+        #Printer.normal(2,0,'dataset_settings: ', self.dataset_settings)
 
     # get camera settings
     def get_cam_settings(self):
@@ -102,7 +103,7 @@ class Config(object):
                 try:
                     self.cam_settings = yaml.load(stream, Loader=yaml.FullLoader)
                 except yaml.YAMLError as exc:
-                    print(exc)
+                    Printer.normal(2,0,exc)
 
     # calibration matrix
     @property

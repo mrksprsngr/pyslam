@@ -26,9 +26,9 @@ class Parameters(object):
     # SLAM threads 
     kLocalMappingOnSeparateThread=True           # True: move local mapping on a separate thread, False: tracking and then local mapping in a single thread 
     kTrackingWaitForLocalMappingToGetIdle=False  
-    kTrackingWaitForLocalMappingSleepTime=0.6 # 0.5  # -1 for no sleep # [s]
+    kTrackingWaitForLocalMappingSleepTime=0.5 # 0.5  # -1 for no sleep # [s]
     kLocalMappingParallelKpsMatching=True
-    kLocalMappingParallelKpsMatchingNumWorkers=4
+    kLocalMappingParallelKpsMatchingNumWorkers=1
     
     
     # Number of desired keypoints per frame 
@@ -125,5 +125,5 @@ class Parameters(object):
 
 
     # other parameters 
-    kChi2Mono = 5.991 # chi-square 2 DOFs, used for reprojection error  (Hartley Zisserman pg 119)
+    kChi2Mono = 5.991 # chi-square 2 DOFs, used for reprojection error  (Hartley Zisserman pg 119 RANSAC 2 homography, camera matrix 5.99 σ2)
 

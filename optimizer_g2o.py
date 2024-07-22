@@ -55,7 +55,7 @@ def bundle_adjustment(keyframes, points, local_window, fixed_points=False, verbo
     for kf in (local_frames if fixed_points else keyframes):    # if points are fixed then consider just the local frames, otherwise we need all frames or at least two frames for each point
         if kf.is_bad:
             continue 
-        #print('adding vertex frame ', f.id, ' to graph')
+        #Printer.normal(2,0,'adding vertex frame ', f.id, ' to graph')
         se3 = g2o.SE3Quat(kf.Rcw, kf.tcw)
         v_se3 = g2o.VertexSE3Expmap()
         v_se3.set_estimate(se3)
@@ -79,9 +79,9 @@ def bundle_adjustment(keyframes, points, local_window, fixed_points=False, verbo
             continue
         if __debug__:        
             if not any([f in keyframes for f in p.keyframes()]):  
-                Printer.red('point without a viewing frame!!')
+                Printer.red(1,'all','point without a viewing frame!!')
                 continue        
-        #print('adding vertex point ', p.id,' to graph')
+        #Printer.normal(2,0,'adding vertex point ', p.id,' to graph')
         v_p = g2o.VertexSBAPointXYZ()    
         v_p.set_id(p.id * 2 + 1)  # odd ids
         v_p.set_estimate(p.pt[0:3])
@@ -96,7 +96,7 @@ def bundle_adjustment(keyframes, points, local_window, fixed_points=False, verbo
                 continue 
             if kf not in graph_keyframes:
                 continue
-            #print('adding edge between point ', p.id,' and frame ', f.id)
+            #Printer.normal(2,0,'adding edge between point ', p.id,' and frame ', f.id)
             edge = g2o.EdgeSE3ProjectXYZ()
             edge.set_vertex(0, v_p)
             edge.set_vertex(1, graph_keyframes[kf])
@@ -182,7 +182,7 @@ def pose_optimization(frame, verbose=False, rounds=10):
             frame.outliers[idx] = False 
 
             # add edge
-            #print('adding edge between point ', p.id,' and frame ', frame.id)
+            #Printer.normal(2,0,'adding edge between point ', p.id,' and frame ', frame.id)
             edge = g2o.EdgeSE3ProjectXYZOnlyPose()
 
             edge.set_vertex(0, opt.vertex(0))
@@ -203,7 +203,7 @@ def pose_optimization(frame, verbose=False, rounds=10):
             num_point_edges += 1
 
     if num_point_edges < 3:
-        Printer.red('pose_optimization: not enough correspondences!') 
+        Printer.red(1,'all','pose_optimization: not enough correspondences!') 
         is_ok = False 
         return 0, is_ok, 0
 
@@ -242,13 +242,13 @@ def pose_optimization(frame, verbose=False, rounds=10):
                 edge.set_robust_kernel(None)
 
         if len(opt.edges()) < 10:
-            Printer.red('pose_optimization: stopped - not enough edges!')   
+            Printer.red(1,'all','pose_optimization: stopped - not enough edges!')   
             is_ok = False           
             break                 
     
-    print('pose optimization: available ', num_point_edges, ' points, found ', num_bad_point_edges, ' bad points')     
+    Printer.normal(2,0,'pose optimization: available ', num_point_edges, ' points, found ', num_bad_point_edges, ' bad points')     
     if num_point_edges == num_bad_point_edges:
-        Printer.red('pose_optimization: all the available correspondences are bad!')           
+        Printer.red(1,'all','pose_optimization: all the available correspondences are bad!')           
         is_ok = False      
 
     # update pose estimation
@@ -292,7 +292,7 @@ def local_bundle_adjustment(keyframes, points, keyframes_ref=[], fixed_points=Fa
     for kf in keyframes:    
         if kf.is_bad:
             continue 
-        #print('adding vertex frame ', f.id, ' to graph')
+        #Printer.normal(2,0,'adding vertex frame ', f.id, ' to graph')
         se3 = g2o.SE3Quat(kf.Rcw, kf.tcw)
         v_se3 = g2o.VertexSE3Expmap()
         v_se3.set_estimate(se3)
@@ -310,7 +310,7 @@ def local_bundle_adjustment(keyframes, points, keyframes_ref=[], fixed_points=Fa
     for kf in keyframes_ref:    
         if kf.is_bad:
             continue 
-        #print('adding vertex frame ', f.id, ' to graph')
+        #Printer.normal(2,0,'adding vertex frame ', f.id, ' to graph')
         se3 = g2o.SE3Quat(kf.Rcw, kf.tcw)
         v_se3 = g2o.VertexSE3Expmap()
         v_se3.set_estimate(se3)
@@ -329,10 +329,10 @@ def local_bundle_adjustment(keyframes, points, keyframes_ref=[], fixed_points=Fa
         if p.is_bad:  # do not consider bad points             
             continue  
         if not any([f in keyframes for f in p.keyframes()]):  
-            Printer.orange('point %d without a viewing keyframe in input keyframes!!' %(p.id))
+            Printer.orange(1,'all','point %d without a viewing keyframe in input keyframes!!' %(p.id))
             #Printer.orange('         keyframes: ',p.observations_string())
             continue
-        #print('adding vertex point ', p.id,' to graph')
+        #Printer.normal(2,0,'adding vertex point ', p.id,' to graph')
         v_p = g2o.VertexSBAPointXYZ()    
         v_p.set_id(p.id * 2 + 1)  # odd ids
         v_p.set_estimate(p.pt[0:3])
@@ -350,12 +350,12 @@ def local_bundle_adjustment(keyframes, points, keyframes_ref=[], fixed_points=Fa
             if __debug__:      
                 p_f = kf.get_point_match(p_idx)
                 if p_f != p:
-                    print('frame: ', kf.id, ' missing point ', p.id, ' at index p_idx: ', p_idx)                    
+                    Printer.normal(2,0,'frame: ', kf.id, ' missing point ', p.id, ' at index p_idx: ', p_idx)                    
                     if p_f is not None:
-                        print('p_f:', p_f)
-                    print('p:',p)
+                        Printer.normal(2,0,'p_f:', p_f)
+                    Printer.normal(2,0,'p:',p)
             assert(kf.get_point_match(p_idx) is p)            
-            #print('adding edge between point ', p.id,' and frame ', f.id)
+            #Printer.normal(2,0,'adding edge between point ', p.id,' and frame ', f.id)
             edge = g2o.EdgeSE3ProjectXYZ()
             edge.set_vertex(0, v_p)
             edge.set_vertex(1, graph_keyframes[kf])

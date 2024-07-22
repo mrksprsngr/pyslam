@@ -159,7 +159,7 @@ def search_frame_for_triangulation_test(f1, f2, img2, img1 = None):
     medianDepthF2 = f2.compute_points_median_depth()
     ratioBaselineDepth = baseline/medianDepthF2
     if ratioBaselineDepth < Parameters.kMinRatioBaselineDepth:  
-        Printer.red("search for triangulation: impossible with too low ratioBaselineDepth!")
+        Printer.red(1,'all',"search for triangulation: impossible with too low ratioBaselineDepth!")
         return idxs1_out, idxs2_out, num_found_matches, img2_epi # EXIT           
 
     # compute the fundamental matrix between the two frames by using their estimated poses 

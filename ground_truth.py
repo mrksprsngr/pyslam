@@ -43,7 +43,7 @@ def groundtruth_factory(settings):
     path = settings['base_path']
     name = settings['name']
            
-    print('using groundtruth: ', type)   
+    Printer.normal(2,0,'using groundtruth: ', type)   
     if type == 'kitti':         
         return KittiGroundTruth(path, name, associations, GroundTruthType.KITTI)
     if type == 'tum':          
@@ -54,8 +54,8 @@ def groundtruth_factory(settings):
         name = settings['groundtruth_file']
         return SimpleGroundTruth(path, name, associations, GroundTruthType.SIMPLE)     
     else:
-        print('not using groundtruth')
-        print('if you are using main_vo.py, your estimated trajectory will not make sense!')          
+        Printer.normal(2,0,'not using groundtruth')
+        Printer.normal(2,0,'if you are using main_vo.py, your estimated trajectory will not make sense!')          
         return GroundTruth(path, name, associations=None, type=GroundTruthType.NONE)
 
 
@@ -81,7 +81,7 @@ class GroundTruth(object):
     def convertToSimpleXYZ(self, filename='groundtruth.txt'):
         out_file = open(filename,"w")
         num_lines = len(self.data)
-        print('num_lines:', num_lines)
+        Printer.normal(2,0,'num_lines:', num_lines)
         for ii in range(num_lines):
             x,y,z,scale = self.getPoseAndAbsoluteScale(ii)
             if ii == 0:

@@ -4,6 +4,7 @@ import numpy as np
 from utils_features import descriptor_sigma_mad
 from parameters import Parameters 
 from frame import Frame   
+from utils_sys import Printer
 
 # experimental 
 class SLAMDynamicConfig(object):
@@ -27,7 +28,7 @@ class SLAMDynamicConfig(object):
                 self.descriptor_distance_sigma = self.descriptor_distance_alpha*self.descriptor_distance_sigma + (1.-self.descriptor_distance_alpha)*delta
             else:
                 self.descriptor_distance_sigma = delta
-            print('descriptor sigma: ', self.descriptor_distance_sigma)
+            Printer.normal(3,1,'descriptor sigma: ', self.descriptor_distance_sigma)
         else:
             self.descriptor_distance_sigma = 0
         return self.descriptor_distance_sigma

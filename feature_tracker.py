@@ -152,7 +152,7 @@ class LkFeatureTracker(FeatureTracker):
         #    Printer.green('LkFeatureTracker: forcing at least 3 levels on LK pyr optic flow') 
         #    num_levels = 3          
         optic_flow_num_levels = max(kLkPyrOpticFlowNumLevelsMin,num_levels)
-        Printer.green('LkFeatureTracker: num levels on LK pyr optic flow: ', optic_flow_num_levels)
+        Printer.green(1,'all','LkFeatureTracker: num levels on LK pyr optic flow: ', optic_flow_num_levels)
         # we use LK pyr optic flow for matching     
         self.lk_params = dict(winSize  = (21, 21), 
                               maxLevel = optic_flow_num_levels,
@@ -223,7 +223,7 @@ class DescriptorFeatureTracker(FeatureTracker):
         kps_cur = np.array([x.pt for x in kps_cur], dtype=np.float32) 
     
         idxs_ref, idxs_cur = self.matcher.match(des_ref, des_cur)  #knnMatch(queryDescriptors,trainDescriptors)
-        #print('num matches: ', len(matches))
+        #Printer.normal(2,0,'num matches: ', len(matches))
 
         res = FeatureTrackingResult()
         res.kps_ref = kps_ref  # all the reference keypoints  

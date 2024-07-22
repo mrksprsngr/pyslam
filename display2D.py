@@ -16,11 +16,12 @@
 * You should have received a copy of the GNU General Public License
 * along with PYSLAM. If not, see <http://www.gnu.org/licenses/>.
 """
+from utils_sys import Printer 
 
 #import pygame
-print("importing pygame")
+Printer.normal(2,0,"importing pygame")
 import pygame
-print("initialising pygame")
+Printer.normal(2,0,"initialising pygame")
 pygame.init()
 
 from pygame.locals import DOUBLEBUF
@@ -36,6 +37,7 @@ class Display2D(object):
     def quit(self):
         pygame.display.quit()
         pygame.quit()
+        Printer.normal(1,5,"Display 2D stopped.")
 
     def draw(self, img):
         # junk

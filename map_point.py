@@ -424,8 +424,8 @@ class MapPoint(MapPointBase):
                      
         normals = np.array([normalize_vector2(position-kf.Ow) for kf,idx in observations])
         normal = normalize_vector2(np.mean(normals,axis=0))
-        #print('normals: ', normals)
-        #print('mean normal: ', self.normal)        
+        #Printer.normal(2,0,'normals: ', normals)
+        #Printer.normal(2,0,'mean normal: ', self.normal)        
   
         level = kf_ref.octaves[idx_ref]
         level_scale_factor = Frame.feature_manager.scale_factors[level]
@@ -456,9 +456,9 @@ class MapPoint(MapPointBase):
             median_distances = [ np.median(Frame.descriptor_distances(descriptors[i], descriptors)) for i in range(N)]
             with self._lock_features:            
                 self.des = descriptors[np.argmin(median_distances)].copy()
-            #print('descriptors: ', descriptors)
-            #print('median_distances: ', median_distances)
-            #print('des: ', self.des)        
+            #Printer.normal(2,0,'descriptors: ', descriptors)
+            #Printer.normal(2,0,'median_distances: ', median_distances)
+            #Printer.normal(2,0,'des: ', self.des)        
 
 
     def update_info(self):

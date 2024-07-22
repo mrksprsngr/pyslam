@@ -44,7 +44,7 @@ class SuperPointOptions:
         
         use_cuda = torch.cuda.is_available() & do_cuda
         device = torch.device('cuda' if use_cuda else 'cpu')
-        print('SuperPoint using ', device)        
+        Printer.normal(2,0,'SuperPoint using ', device)        
         self.cuda=use_cuda   
     
     
@@ -73,17 +73,17 @@ class SuperPointFeature2D:
     def __init__(self, do_cuda=True): 
         self.lock = RLock()
         self.opts = SuperPointOptions(do_cuda)
-        print(self.opts)        
+        Printer.normal(2,0,self.opts)        
         
-        print('SuperPointFeature2D')
-        print('==> Loading pre-trained network.')
+        Printer.normal(2,0,'SuperPointFeature2D')
+        Printer.normal(2,0,'==> Loading pre-trained network.')
         # This class runs the SuperPoint network and processes its outputs.
         self.fe = SuperPointFrontend(weights_path=self.opts.weights_path,
                                 nms_dist=self.opts.nms_dist,
                                 conf_thresh=self.opts.conf_thresh,
                                 nn_thresh=self.opts.nn_thresh,
                                 cuda=self.opts.cuda)
-        print('==> Successfully loaded pre-trained network.')
+        Printer.normal(2,0,'==> Successfully loaded pre-trained network.')
                         
         self.pts = []
         self.kps = []        
@@ -100,10 +100,10 @@ class SuperPointFeature2D:
             self.frameFloat  = (frame.astype('float32') / 255.)
             self.pts, self.des, self.heatmap = self.fe.run(self.frameFloat)
             # N.B.: pts are - 3xN numpy array with corners [x_i, y_i, confidence_i]^T.
-            #print('pts: ', self.pts.T)
+            #Printer.normal(2,0,'pts: ', self.pts.T)
             self.kps = convert_superpts_to_keypoints(self.pts.T, size=self.keypoint_size)
             if kVerbose:
-                print('detector: SUPERPOINT, #features: ', len(self.kps), ', frame res: ', frame.shape[0:2])      
+                Printer.normal(2,0,'detector: SUPERPOINT, #features: ', len(self.kps), ', frame res: ', frame.shape[0:2])      
             return self.kps, transpose_des(self.des)                 
             
     # return keypoints if available otherwise call detectAndCompute()    
@@ -117,7 +117,7 @@ class SuperPointFeature2D:
     def compute(self, frame, kps=None, mask=None): # kps is a fake input, mask is a fake input
         with self.lock: 
             if self.frame is not frame:
-                Printer.orange('WARNING: SUPERPOINT is recomputing both kps and des on last input frame', frame.shape)
+                Printer.orange(1,'all','WARNING: SUPERPOINT is recomputing both kps and des on last input frame', frame.shape)
                 self.detectAndCompute(frame)
             return self.kps, transpose_des(self.des)
            

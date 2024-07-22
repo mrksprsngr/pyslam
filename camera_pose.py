@@ -25,7 +25,7 @@ class CameraPose(object):
     def __init__(self, pose=None):
         #self._pose = None  # g2o.Isometry3d 
         if pose is None: 
-            pose = g2o.Isometry3d()      
+            pose = g2o.Isometry3d() # identity pose      
         self.set(pose)
         self.covariance = np.identity(6)          # pose covariance
         
@@ -69,7 +69,10 @@ class CameraPose(object):
         return angle_axis  
     
     def get_inverse_matrix(self):
-        return self._pose.inverse().matrix()     
+        return self._pose.inverse().matrix()
+    
+    def get_inverse(self):
+        return self._pose.inverse()  
               
     # set from orientation (g2o.Quaternion()) and position (3D vector)    
     def set_from_quaternion_and_position(self,quaternion,position):

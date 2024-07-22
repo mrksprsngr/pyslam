@@ -83,7 +83,7 @@ tf.app.flags.DEFINE_boolean('ori_off', False,
 def extract_deep_features(sift_wrapper, sess, img_path, qtz=True):
     img = cv2.imread(img_path)
     if img is None:
-        Printer.red('cannot find img: ', img_path)
+        Printer.red(1,'all','cannot find img: ', img_path)
         sys.exit(0)
     gray_img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     # detect SIFT keypoints.
@@ -156,10 +156,10 @@ def main(argv=None):  # pylint: disable=unused-argument
     sift_wrapper.ori_off = FLAGS.ori_off
     sift_wrapper.create()
     # create deep feature extractor.
-    Printer.yellow('loading model:',FLAGS.model_path,'...')
+    Printer.yellow(1,'all','loading model:',FLAGS.model_path,'...')
     graph = load_frozen_model(FLAGS.model_path, print_nodes=False)
     #sess = tf.Session(graph=graph)
-    Printer.yellow('...done')    
+    Printer.yellow(1,'all','...done')    
 
     with tf.Session(graph=graph, config=config) as sess:    
         # extract deep feature from images.
